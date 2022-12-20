@@ -8,7 +8,7 @@ SimpleLegoProxy is very easy to use. It works by querying an Roblox API Subdomai
 Here's the Reference URL you can use to test Requests.\
 * Server Port is not required when you are hosting it on your own domain.
 ```
-https://domain.here/?subdomain=<robloxAPISubdomain>&path=<APIPath>
+https://proxy.veriblox.ml/?subdomain=<robloxAPISubdomain>&path=<APIPath>
 ```
 
 ## Starting SimpleLegoProxy
