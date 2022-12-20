@@ -3,11 +3,12 @@ SimpleLegoProxy is a VERY simple Roblox Proxy by accessing Roblox Resources thro
 
 ## How to use SimpleLegoProxy
 SimpleLegoProxy is very easy to use. It works by querying an Roblox API Subdomain and Providing the path for your request.
-![image](https://user-images.githubusercontent.com/53323309/208646751-caac3a41-f2e3-423f-9ec4-c27c53a21d43.png)
+![image](https://user-images.githubusercontent.com/53323309/208656333-c15741f3-fda2-4e88-8d06-89c78a6a3a54.png)
 
-Here's the Reference URL you can use to test Requests.
+Here's the Reference URL you can use to test Requests.\
+* Server Port is not required when you are hosting it on your own domain.
 ```
-https://yourproject.domain/?subdomain=<robloxAPISubdomain>&path=<APIPath>
+https://proxy.veriblox.ml/?subdomain=<robloxAPISubdomain>&path=<APIPath>
 ```
 
 ## Starting SimpleLegoProxy
