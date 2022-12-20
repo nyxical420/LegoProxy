@@ -9,3 +9,7 @@ Here's the Reference URL you can use to test Requests.
 ```
 https://yourproject.domain/?subdomain=<robloxAPISubdomain>&path=<APIPath>
 ```
+
+## Starting SimpleLegoProxy
+To start SimpleLegoProxy in your Host, simply run the command `python3 main.py`.\
+Make sure that you have the proper packages installed in your computer by doing `pip3 install -U -r requirements.txt`!
