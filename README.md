@@ -17,7 +17,7 @@ https://proxy.veriblox.ml/?subdomain=users&path=v1/users/1
 ```
 
 ## SimpleLegoProxy Self-Hosting
-You can host SimpleLegoProxy by yourself by downloading the source code and running it to your server.\
+You can host SimpleLegoProxy by yourself by downloading the source code and running it to your server if you are having issues getting the json response your expecting.\
 However, if you don't own a VPS. you can always use free hosting sites like Replit or Railway.
 
 The performance of the two mentioned hosting services may not be fast. but its better than not being able to own a VPS which you need to pay monthly.
