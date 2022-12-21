@@ -15,6 +15,7 @@ But with SimpleLegoProxy, you will request:
 ```
 https://proxy.veriblox.ml/users/v1.users.1
 ```
+The dots are replaced to `/` to make the `{path}` value a single path. I'm still figuring out how to do it with slashes.
 
 ## SimpleLegoProxy Self-Hosting
 You can host SimpleLegoProxy by yourself by downloading the source code and running it to your server if you are having issues getting the json response your expecting.\
