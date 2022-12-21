@@ -3,6 +3,9 @@ SimpleLegoProxy - A very simple rotating Roblox API Proxy.
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Nod3IF?referralCode=pmHjGZ)
 
+## Note
+Please do not use somebody else's SimpleLegoProxy server unless you trust them. They can easily fake your requests to send forge / fake data to your game and possibly break it. It is recommended you host your own SimpleLegoProxy server to prevent forged data.
+
 ## SimpleLegoProxy Usage
 SimpleLegoProxy is very easy to use. It works by querying an Roblox API Subdomain and Providing the path for your request.
 
