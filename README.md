@@ -13,7 +13,7 @@ https://users.roblox.com/v1/users/1
 
 But with SimpleLegoProxy, you will request:
 ```
-https://proxy.veriblox.ml/users?path=v1%2Fusers%2F1
+https://proxy.veriblox.ml/users?path=v1/users/1
 ```
 The dots are replaced to `/` to make the `{path}` value a single path. I'm still figuring out how to do it with slashes.
 
