@@ -4,7 +4,7 @@ LegoProxy - A rotating Roblox Proxy for accessing Roblox APIs through HTTPServic
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Nod3IF?referralCode=pmHjGZ)
 
 ## Note
-Please do not use somebody else's LegoProxy server unless you trust them. They can easily fake your requests to send forged / fake data to your game and possibly break it. It is recommended you host your own LegoProxy server to prevent forged data.
+Please do not use somebody else's LegoProxy server unless you trust them. They can easily fake your requests to send forged or fake data to your game and possibly break it. It is recommended you host your own LegoProxy server to prevent recieving forged or fake data.
 
 ## LegoProxy Usage
 LegoProxy is very easy to use. It works by querying an Roblox API Subdomain and Providing the path for your request.
