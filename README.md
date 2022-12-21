@@ -1,5 +1,5 @@
 # LegoProxy
-LegoProxy - A very simple rotating Roblox API Proxy.
+LegoProxy - A rotating Roblox Proxy for accessing Roblox APIs
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Nod3IF?referralCode=pmHjGZ)
 
