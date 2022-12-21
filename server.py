@@ -1,42 +1,34 @@
 from random import choice
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
 from requests import get, JSONDecodeError, ConnectTimeout
 
 app = FastAPI(
-    title="SimpleLegoProxy",
+    title="RoPortal",
     description="A very simple rotating Roblox API Proxy",
     version="1.1",
     docs_url="/docs",
     redoc_url=None
 )
 
-proxies_list = open("proxies.txt", "r").read().strip().split()
+proxylist = open("proxies.txt", "r").read().strip().split()
 
 @app.get("/")
 async def legoproxyHome():
-    return RedirectResponse("https://github.com/PyTsun/SimpleLegoProxy")
+    return {"success": True, "message": "RoPortal is Running!"}
 
 @app.get("/{subdomain}", description="Non-Rotating Proxy Request")
-async def proxyRequest(subdomain: str = None, path: str = None):
+async def proxyRequest(subdomain: str, path: str):
     path = path.replace(".", "/")
-    if path == None: return {"success": False, "message": "SimpleLegoProxy - API Path is a Required Path Argument that is missing."}
-    if subdomain == None: return {"success": False, "message": "SimpleLegoProxy - Subdomain is a Required Path Argument that is missing."}
-    if subdomain == None and path == None: return {"success": False, "message": "SimpleLegoProxy - Subdomain and API Path is a Required Path Argument that is missing."}
-
 
     try: return get(f'https://{subdomain}.roblox.com/{path}').json()
-    except JSONDecodeError: return {"success": False, "message": "SimpleLegoProxy - Site did not return JSON Data."}
+    except JSONDecodeError: return {"success": False, "message": "RoPortal - Roblox API did not return JSON Data."}
 
 @app.get("/rotate/{subdomain}", description="Rotating Proxy Request")
-async def proxyRequest(subdomain: str = None, path: str = None):
+async def proxyRequest(subdomain: str, path: str):
     path = path.replace(".", "/")
-    if path == None: return {"success": False, "message": "SimpleLegoProxy - API Path is a Required Path Argument that is missing."}
-    if subdomain == None: return {"success": False, "message": "SimpleLegoProxy - Subdomain is a Required Path Argument that is missing."}
-    if subdomain == None and path == None: return {"success": False, "message": "SimpleLegoProxy - Subdomain and API Path is a Required Path Argument that is missing."}
-
-    if proxies_list == []: return {"success": False, "message": "SimpleLegoProxy - Proxy IP List is Empty. Please add IPs and Restart SimpleLegoProxy."}
-    proxy = choice(proxies_list)
+    
+    if proxylist == []: return {"success": False, "message": "RoPortal - Proxy IP List is Empty. Please add IPs and Restart RoPortal."}
+    proxy = choice(proxylist)
     try: return get(f'https://{subdomain}.roblox.com/{path}', proxies={"https": f"https://{proxy}"}).json()
-    except JSONDecodeError: return {"success": False, "message": "SimpleLegoProxy - Site did not return JSON Data."}
-    except ConnectTimeout: return {"success": False, "message": f"SimpleLegoProxy - Proxy Timed Out. Proxy IP: {proxy}"}
+    except JSONDecodeError: return {"success": False, "message": "RoPortal - Roblox API did not return JSON Data."}
+    except ConnectTimeout: return {"success": False, "message": f"RoPortal - Proxy Timed Out. Proxy IP: {proxy}"}
