@@ -1,2 +1,4 @@
-from os import system
-system("uvicorn server:app --reload --port 443 --host 0.0.0.0")
+from uvicorn import run
+
+if __name__ == "__main__":
+    run("server:app", host="0.0.0.0", port=443, reload=True)
