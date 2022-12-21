@@ -16,14 +16,14 @@ https://users.roblox.com/v1/users/1
 
 But with LegoProxy, you will request:
 ```
-https://proxy.veriblox.ml/users?path=v1/users/1
+https://proxy.veriblox.ml/users?e=v1/users/1
 ```
 
 ## LegoProxy IP Rotation
 To rotate your proxy to new IPs per request. you can provide LegoProxy the IPs inside a text file (`proxies.txt`).\
 To do a request in a rotating IP, you can add `/rotate` in your URL path.
 ```
-https://proxy.veriblox.ml/rotate/users?path=v1/users/1
+https://proxy.veriblox.ml/rotate/users?e=v1/users/1
 ```
 
 ## LegoProxy Self-Hosting
