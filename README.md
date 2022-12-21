@@ -16,7 +16,7 @@ But with SimpleLegoProxy, you will request:
 https://proxy.veriblox.ml/users?path=v1/users/1
 ```
 
-## SimpleLegoProxy Rotation
+## SimpleLegoProxy IP Rotation
 To rotate your proxy to new IPs per request. you can provide SimpleLegoProxy the IPs inside a text file (`proxies.txt`).\
 To do a request in a rotating IP, you can add `/rotate` in your URL path.
 ```
