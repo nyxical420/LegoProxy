@@ -16,6 +16,13 @@ But with SimpleLegoProxy, you will request:
 https://proxy.veriblox.ml/users?path=v1/users/1
 ```
 
+## SimpleLegoProxy Rotation
+To rotate your proxy to new IPs per request. you can provide SimpleLegoProxy the IPs inside a text file (`proxies.txt`).\
+To do a request in a rotating IP, you can add `/rotate` in your URL path.
+```
+https://proxy.veriblox.ml/rotate/users?path=v1/users/1
+```
+
 ## SimpleLegoProxy Self-Hosting
 You can host SimpleLegoProxy by yourself by downloading the source code and running it to your server if you are having issues getting the json response your expecting.\
 However, if you don't own a VPS. you can always use free hosting sites like Replit or Railway.
