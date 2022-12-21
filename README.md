@@ -1,5 +1,5 @@
 # SimpleLegoProxy
-SimpleLegoProxy is a VERY simple Roblox Proxy by accessing Roblox Resources through HTTPService.
+SimpleLegoProxy - A very simple rotating Roblox API Proxy.
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template/Nod3IF?referralCode=pmHjGZ)
 
