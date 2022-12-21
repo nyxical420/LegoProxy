@@ -33,4 +33,3 @@ async def proxyRequest(subdomain: str, path: str):
     try: return get(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}).json()
     except JSONDecodeError: return {"success": False, "message": "RoPortal - Roblox API did not return JSON Data."}
     except ConnectTimeout: return {"success": False, "message": f"RoPortal - Proxy Timed Out. Proxy IP: {proxy}"}
-    except : return {"success": False, "message": f"RoPortal - Proxy Timed Out. Proxy IP: {proxy}"}
