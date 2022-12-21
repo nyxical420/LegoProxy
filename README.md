@@ -13,7 +13,7 @@ https://users.roblox.com/v1/users/1
 
 But with SimpleLegoProxy, you will request:
 ```
-https://proxy.veriblox.ml/?subdomain=users&path=v1/users/1
+https://proxy.veriblox.ml/users/v1.users.1
 ```
 
 ## SimpleLegoProxy Self-Hosting
