@@ -1,10 +1,17 @@
 from fastapi import FastAPI
 from requests import get, JSONDecodeError
 
-app = FastAPI()
+app = FastAPI(
+    title="SimpleLegoProxy",
+    description="A VERY simple Roblox Proxy",
+    version="1.0",
+    docs_url="/docs",
+    redoc_url=None
+)
 
-@app.get("/")
+@app.get("/{subdomain}/{path}")
 async def proxyRequest(subdomain: str = None, path: str = None):
+    path = path.replace(".", "/")
     if subdomain == None and path == None: return {"success": True, "message": "SimpleLegoProxy is Running!"}
 
     if path == None: return {"success": False, "message": "SimpleLegoProxy - API Path is a Required Query Argument that is missing."}
