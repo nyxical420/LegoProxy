@@ -28,7 +28,7 @@ async def proxyRequest(subdomain: str = None, path: str = None):
     try: return get(f'https://{subdomain}.roblox.com/{path}').json()
     except JSONDecodeError: return {"success": False, "message": "SimpleLegoProxy - Site did not return JSON Data."}
 
-@app.get("rotate/{subdomain}", description="Uses a Random IP")
+@app.get("/rotate/{subdomain}", description="Uses a Random IP")
 async def proxyRequest(subdomain: str = None, path: str = None):
     path = path.replace(".", "/")
     if path == None: return {"success": False, "message": "SimpleLegoProxy - API Path is a Required Path Argument that is missing."}
