@@ -18,14 +18,14 @@ async def legoproxyHome():
     return {"success": True, "message": "LegoProxy is Running!"}
 
 @app.get("/{subdomain}", description="Non-Rotating Proxy Request")
-async def proxyRequest(subdomain: str, e: str, password: str = None):
+async def proxyRequest(subdomain: str, e: str):
     if e == None: return {"success": False, "message": "LegoProxy - Path is a required Query Argument that is missing."}
 
     try: return get(f'https://{subdomain}.roblox.com/{e}').json()
     except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
 
 @app.get("/rotate/{subdomain}", description="Rotating Proxy Request")
-async def proxyRequest(subdomain: str, e: str, password: str = None):
+async def proxyRequest(subdomain: str, e: str):
     if subdomain == None: return {"success": False, "message": "LegoProxy - Subdomain is a required Path Argument that is missing."}
     if e == None: return {"success": False, "message": "LegoProxy - Path is a required Query Argument that is missing."}
     
