@@ -26,6 +26,8 @@ To do a request in a rotating IP, you can add `/rotate` in your URL path.
 https://proxy.veriblox.ml/rotate/users?path=v1/users/1
 ```
 
+* IP Rotation is only required if you are hosting an instance of RoPortal for everyone to use.
+
 ## RoPortal Self-Hosting
 You can host RoPortal by yourself by downloading the source code and running it to your server if you are having issues getting the json response your expecting.\
 However, if you don't own a VPS. you can always use free hosting sites like Replit or Railway.
