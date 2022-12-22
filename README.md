@@ -31,5 +31,5 @@ To lock LegoProxy to your game only, you can set an Environment Variable (`place
 ## LegoProxy Self-Hosting
 You can host LegoProxy on Paid or Free Services.
 
-But for this one, we will be focusing on hosting LegoProxy inside a Free Host, [Deta](https://www.deta.sh/).
+But for this one, we will be focusing on hosting LegoProxy inside a Free Host, [Deta](https://www.deta.sh/) or [Deta Space](https://alpha.deta.space/).
 
