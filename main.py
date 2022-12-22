@@ -1,6 +1,5 @@
 from json import loads
 from random import choice
-from dotenv import get_key
 from fastapi import FastAPI, Request
 from requests import get, post, JSONDecodeError, ConnectTimeout
 
@@ -15,8 +14,7 @@ proxylist = open("proxies.txt", "r").read().strip().split()
 
 # If the placeId variable is set, all incoming requests will be blocked unless the request is from a game.
 # placeId 変数が設定されている場合、リクエストがゲームからのものでない限り、すべての着信リクエストがブロックされます。
-placeId = get_key(".env", "placeId")
-gameLock = True if placeId != "" else False
+placeId = 0
 
 @app.get("/")
 async def legoproxyHome():
@@ -25,7 +23,7 @@ async def legoproxyHome():
 @app.get("/{subdomain}/{path:path}", description="Non-Rotating Proxy GET Request")
 @app.post("/{subdomain}/{path:path}", description="Non-Rotating Proxy POST Request")
 async def proxyRequest(r: Request, subdomain: str, path: str, request: str = None):
-    if gameLock == True: 
+    if placeId != 0: 
         if r.headers.get("Roblox-Id") != str(placeId):
             return {"success": False, "message": "LegoProxy - This proxy is Game Locked."}
 
@@ -42,7 +40,7 @@ async def proxyRequest(r: Request, subdomain: str, path: str, request: str = Non
 @app.get("/rotate/{subdomain}/{path:path}", description="Rotating Proxy GET Request")
 @app.post("/rotate/{subdomain}/{path:path}", description="Rotating Proxy POST Request")
 async def proxyRequest_rotating(r: Request, subdomain: str, path: str, request: str = None):
-    if gameLock == True: 
+    if placeId != 0: 
         if r.headers.get("Roblox-Id") != str (placeId):
             return {"success": False, "message": "LegoProxy - This Proxy is Game Locked."}
 
