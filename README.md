@@ -29,6 +29,7 @@ https://legoproxy.deta.dev/rotate/users/v1/users/1
 ## LegoProxy GameLock
 To lock LegoProxy to your game only, you can set the `placeId` value in the code to your Roblox Game Id to prevent unwanted request coming outside from your game.\
 **NOTE:** This prevents you from being able to access your Proxy in your browser.
+**VULNERABILITY:** People can bypass the block by setting a Roblox-Id header to their request.
 
 ## LegoProxy Self-Hosting
 If you can't affort to buy a VPS monthly, there are sevral free hosting services i know that can run this proxy without any issues.
