@@ -31,7 +31,9 @@ To lock LegoProxy to your game only, you can set the `placeId` value in the code
 **NOTE:** This prevents you from being able to access your Proxy in your browser.
 
 ## LegoProxy Self-Hosting
-You can host LegoProxy on Paid or Free Services.
+If you can't affort to buy a VPS monthly, there are sevral free hosting services i know that can run this proxy without any issues.
 
-But for this one, we will be focusing on hosting LegoProxy inside a Free Host, [Deta](https://www.deta.sh/) or [Deta Space](https://alpha.deta.space/).
-
+Here are three Hosting Services where you can host LegoProxy yourself.
+1. [Deta](https://www.deta.sh/)
+2. [Deta Space](https://alpha.deta.space/)
+3. [Replit](https://replit.com/) (Requires Server to be pinged regularly to keep it active.)
