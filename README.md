@@ -27,7 +27,7 @@ https://legoproxy.deta.dev/rotate/users/v1/users/1
 ```
 
 ## LegoProxy GameLock
-To lock LegoProxy to your game only, you can set an Environment Variable (`placeId`) to your Roblox Game Id to prevent unwanted request coming outside from your game.\
+To lock LegoProxy to your game only, you can set the `placeId` value in the code to your Roblox Game Id to prevent unwanted request coming outside from your game.\
 **NOTE:** This prevents you from being able to access your Proxy in your browser.
 
 ## LegoProxy Self-Hosting
