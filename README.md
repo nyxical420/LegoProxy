@@ -14,14 +14,14 @@ https://users.roblox.com/v1/users/1
 
 But with LegoProxy, you will request:
 ```
-https://legoproxy.deta.dev/users?e=v1/users/1
+https://legoproxy.deta.dev/users/v1/users/1
 ```
 
 ## LegoProxy IP Rotation
 To rotate your proxy to new IPs per request. you can provide LegoProxy the IPs inside a text file (`proxies.txt`).\
 To do a request in a rotating IP, you can add `/rotate` in your URL path.
 ```
-https://legoproxy.deta.dev/rotate/users?e=v1/users/1
+https://legoproxy.deta.dev/rotate/users/v1/users/1
 ```
 
 ## LegoProxy GameLock
