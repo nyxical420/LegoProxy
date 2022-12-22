@@ -24,6 +24,10 @@ To do a request in a rotating IP, you can add `/rotate` in your URL path.
 https://legoproxy.deta.dev/rotate/users?e=v1/users/1
 ```
 
+## LegoProxy GameLock
+To lock LegoProxy to your game only, you can set an Environment Variable (`placeId`) to your Roblox Game Id to prevent unwanted request coming outside from your game.\
+**NOTE:** This prevents you from being able to access your Proxy in your browser.
+
 ## LegoProxy Self-Hosting
 You can host LegoProxy on Paid or Free Services.
 
