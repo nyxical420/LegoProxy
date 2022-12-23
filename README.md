@@ -40,4 +40,5 @@ It is highly recommended to host LegoProxy by yourself if you are going to use i
 
 ## LegoProxy Self-Hosting
 You can host LegoProxy by your own by deploying LegoProxy to one of [these](https://github.com/PyTsun/LegoProxy/blob/main/README.md#deploy-legoproxy) free hosting services.
+
 If you own a VPS, you can install the following packages inside a venv and run it by `python3 start.py` or `uvicorn main:app --host 0.0.0.0 --port 443`.
