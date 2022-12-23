@@ -45,4 +45,5 @@ If you own a VPS, you can install the following packages inside a venv.
 
 You can run the server by typing in one of these.
 ```python3 start.py```
+
 ```uvicorn main:app --host 0.0.0.0 --port 443```.
