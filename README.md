@@ -1,5 +1,6 @@
 # LegoProxy
 LegoProxy - A rotating Roblox Proxy for accessing Roblox APIs through HTTPService
+
 [![Deploy](https://button.deta.dev/1/svg)](https://go.deta.dev/deploy?repo=https://github.com/PyTsun/LegoProxy)
 
 ## Note
