@@ -15,9 +15,10 @@ app = FastAPI(
 
 placeId = getenv("placeId")
 proxyAuthKey = getenv("proxyAuthKey")
-idLock = True if placeId == "" else False
-keyLock = True if proxyAuthKey == "" else False
+idLock = False if placeId == "" else True
+keyLock = False if proxyAuthKey == "" else True
 proxylist = open("proxies.txt", "r").read().strip().split()
+print(idLock, keyLock)
 
 @app.get("/")
 async def legoproxyHome():
@@ -43,6 +44,8 @@ async def proxyRequest(r: Request, subdomain: str, path: str, request: str = Non
             return post(f'https://{subdomain}.roblox.com/{path}', json=loads(request)).json()
 
     except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
+    except ConnectTimeout: return {"success": False, "message": "LegoProxy - Request Timed Out."}
+    except ConnectionError: return {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
 
 @app.get("/rotate/{subdomain}/{path:path}", description="Rotating Proxy GET Request")
 @app.post("/rotate/{subdomain}/{path:path}", description="Rotating Proxy POST Request")
@@ -69,3 +72,4 @@ async def proxyRequest_rotating(r: Request, subdomain: str, path: str, request: 
 
     except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
     except ConnectTimeout: return {"success": False, "message": f"LegoProxy - Proxy Timed Out. Proxy IP: {proxy}"}
+    except ConnectionError: return {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
