@@ -39,5 +39,5 @@ https://legoproxy.deta.dev/rotate/<subdomain>/<path>
 It is highly recommended to host LegoProxy by yourself if you are going to use it for Production Applications or Roblox Games. as you may be getting Fake or Forged data and slowdowns that could do damage to your Production Applocations or Roblox Games.
 
 ## LegoProxy Self-Hosting
-You can host LegoProxy by your own by deploying LegoProxy to one of [these]() free hosting services.
+You can host LegoProxy by your own by deploying LegoProxy to one of [these](https://github.com/PyTsun/LegoProxy/blob/main/README.md#deploy-legoproxy) free hosting services.
 If you own a VPS, you can install the following packages inside a venv and run it by `python3 start.py` or `uvicorn main:app --host 0.0.0.0 --port 443`.
