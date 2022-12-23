@@ -1,7 +1,10 @@
+from os import getenv
 from json import loads
 from random import choice
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from requests import get, post, JSONDecodeError, ConnectTimeout
+load_dotenv(".env")
 
 app = FastAPI(
     title="LegoProxy",
@@ -10,22 +13,26 @@ app = FastAPI(
     docs_url="/docs"
 )
 
+placeId = getenv("placeId")
+proxyAuthKey = getenv("proxyAuthKey")
+idLock = True if placeId == "" else False
+keyLock = True if proxyAuthKey == "" else False
 proxylist = open("proxies.txt", "r").read().strip().split()
-
-# If the placeId variable is set, all incoming requests will be blocked unless the request is from a game.
-# placeId 変数が設定されている場合、リクエストがゲームからのものでない限り、すべての着信リクエストがブロックされます。
-placeId = 0
 
 @app.get("/")
 async def legoproxyHome():
-    return {"success": True, "message": "LegoProxy is Running!"}
+    return {"success": True, "message": "LegoProxy is Running!", "IdLock": idLock, "KeyLock": keyLock}
 
 @app.get("/{subdomain}/{path:path}", description="Non-Rotating Proxy GET Request")
 @app.post("/{subdomain}/{path:path}", description="Non-Rotating Proxy POST Request")
 async def proxyRequest(r: Request, subdomain: str, path: str, request: str = None):
-    if placeId != 0: 
+    if idLock: 
         if r.headers.get("Roblox-Id") != str(placeId):
-            return {"success": False, "message": "LegoProxy - This proxy is Game Locked."}
+            return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
+    
+    if keyLock:
+        if r.headers.get("LP-AuthKey") != proxyAuthKey:
+            return {"success": False, "message": "LegoProxy - This proxy requires an Authentication Key."}
 
     if path == None: return {"success": False, "message": "LegoProxy - Endpoint is a required Query Argument that is missing."}
 
@@ -40,9 +47,13 @@ async def proxyRequest(r: Request, subdomain: str, path: str, request: str = Non
 @app.get("/rotate/{subdomain}/{path:path}", description="Rotating Proxy GET Request")
 @app.post("/rotate/{subdomain}/{path:path}", description="Rotating Proxy POST Request")
 async def proxyRequest_rotating(r: Request, subdomain: str, path: str, request: str = None):
-    if placeId != 0: 
-        if r.headers.get("Roblox-Id") != str (placeId):
-            return {"success": False, "message": "LegoProxy - This Proxy is Game Locked."}
+    if idLock: 
+        if r.headers.get("Roblox-Id") != str(placeId):
+            return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
+    
+    if keyLock:
+        if r.headers.get("LP-AuthKey") != proxyAuthKey:
+            return {"success": False, "message": "LegoProxy - This proxy requires an Authentication Key."}
 
     if subdomain == None: return {"success": False, "message": "LegoProxy - Subdomain is a required Path Argument that is missing."}
     if path == None: return {"success": False, "message": "LegoProxy - Endpoint is a required Query Argument that is missing."}
@@ -51,7 +62,7 @@ async def proxyRequest_rotating(r: Request, subdomain: str, path: str, request: 
     proxy = choice(proxylist)
     
     try: 
-        if r.method == "GET":
+        if r.method == "GET": 
             return get(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}).json()
         if r.method == "POST":
             return post(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}, json=loads(request)).json()
