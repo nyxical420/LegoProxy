@@ -1,5 +1,6 @@
 # LegoProxy
 LegoProxy - A rotating Roblox Proxy for accessing Roblox APIs through HTTPService
+[![Deploy](https://button.deta.dev/1/svg)](https://go.deta.dev/deploy?repo=https://github.com/PyTsun/LegoProxy)
 
 ## Note
 1. Please do not use somebody else's LegoProxy server unless you trust them. They can easily fake your requests to send forged or fake data to your game and possibly break it. It is recommended you host your own LegoProxy server to prevent recieving forged or fake data.
