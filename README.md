@@ -29,7 +29,7 @@ https://legoproxy.deta.dev/<subdomain>/<path>
 
 Requesting to LegoProxy follows the following format if you are going to request with a Rotating IP:
 ```
-https://legoproxy.deta.dev/rotate/<subdomain>/<path>
+https://legoproxy.deta.dev/<subdomain>/<path>?rotate=true
 ```
 
 ## LegoProxy Features
