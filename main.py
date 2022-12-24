@@ -8,7 +8,6 @@ from fastapi.responses import FileResponse
 from requests import get, post, JSONDecodeError, ConnectTimeout
 load_dotenv(".env")
 
-
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
@@ -17,22 +16,28 @@ app = FastAPI(
 )
 
 placeId = getenv("placeId")
-proxyAuthKey = getenv("proxyAuthKey")
+proxyAuthKey = str(getenv("proxyAuthKey"))
 maxRequests = int(getenv("maxRequests"))
+webhook = str(getenv("webhook"))
 idLock = False if placeId == "" else True
 keyLock = False if proxyAuthKey == "" else True
 proxylist = open("proxies.txt", "r").read().strip().split()
 
 global requests
 requests = 0
+print(webhook)
 
 async def resetRequestsCounter():
     global requests
     while True: 
         await sleep(60)
         requests -= requests
-        #print("Requests per minute (RPM) restarted!")
 
+def logRequest(method, subdomain, path, response):
+    data = {"content":None,"embeds":[{"title":f"LegoProxy Request Logs ({method})","color":3092790,"fields":[{"name":"Request Endpoint","value":f"**{subdomain}**.roblox.com","inline":True},{"name":"Request Path","value":f"[/{path}](https://users.roblox.com/{path})","inline":True},{"name":"Data Response","value":f"```json\n{response}\n```"}]}],"username":"LegoProxy","avatar_url":"https://cdn.discordapp.com/attachments/1056074242325741578/1056074861690224720/legoproxy.png","attachments":[]}
+
+    if webhook == "": return
+    post(getenv("webhook"), json=data)
 
 @app.on_event("startup")
 async def on_start():
@@ -46,9 +51,9 @@ async def legoproxyHome():
 async def legoProxyFavicon():
     return FileResponse("legoproxy.ico")
 
-@app.get("/{subdomain}/{path:path}", description="Non-Rotating Proxy GET Request")
-@app.post("/{subdomain}/{path:path}", description="Non-Rotating Proxy POST Request")
-async def proxyRequest(r: Request, subdomain: str, path: str, request: str = None):
+@app.get("/{subdomain}/{path:path}", description="Roblox GET Request")
+@app.post("/{subdomain}/{path:path}", description="Roblox POST Request")
+async def robloxRequest(r: Request, subdomain: str, path: str, rotate: bool = False, request: str = None):
     global requests
     if requests >= maxRequests:
         return {"success": False, "message": "LegoProxy - Max Requests has been reached. Please try again later!"}
@@ -63,44 +68,32 @@ async def proxyRequest(r: Request, subdomain: str, path: str, request: str = Non
 
     requests += 1
 
-    try: 
-        if r.method == "GET":
-            return get(f'https://{subdomain}.roblox.com/{path}').json()
-        if r.method == "POST":
-            return post(f'https://{subdomain}.roblox.com/{path}', json=loads(request)).json()
+    if rotate == False:
+        try: 
+            if r.method == "GET":
+                response = get(f'https://{subdomain}.roblox.com/{path}').json()
+            if r.method == "POST":
+                response = post(f'https://{subdomain}.roblox.com/{path}', json=loads(request)).json()
 
-    except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
-    except ConnectTimeout: return {"success": False, "message": "LegoProxy - Request Timed Out."}
-    except ConnectionError: return {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
-
-@app.get("/rotate/{subdomain}/{path:path}", description="Rotating Proxy GET Request")
-@app.post("/rotate/{subdomain}/{path:path}", description="Rotating Proxy POST Request")
-async def proxyRequest_rotating(r: Request, subdomain: str, path: str, request: str = None):
-    global requests
-    if requests > maxRequests:
-        return {"success": False, "message": "LegoProxy - Max Requests has been reached. Please try again later!"}
-        
-    if idLock: 
-        if r.headers.get("Roblox-Id") != str(placeId):
-            return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
+            logRequest(r.method, subdomain, path, response)
+            return response
+        except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
+        except ConnectTimeout: return {"success": False, "message": "LegoProxy - Request Timed Out."}
+        except ConnectionError: return {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
     
-    if keyLock:
-        if r.headers.get("LP-AuthKey") != proxyAuthKey:
-            return {"success": False, "message": "LegoProxy - This proxy requires an Authentication Key."}
+    if rotate == True:
+        if proxylist == []: return {"success": False, "message": "LegoProxy - Proxy IP List is Empty. Please add IPs and Restart LegoProxy."}
+        proxy = choice(proxylist)
 
-    if subdomain == None: return {"success": False, "message": "LegoProxy - Subdomain is a required Path Argument that is missing."}
-    
-    if proxylist == []: return {"success": False, "message": "LegoProxy - Proxy IP List is Empty. Please add IPs and Restart LegoProxy."}
-    proxy = choice(proxylist)
-    
-    try: 
-        if r.method == "GET": 
-            return get(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}).json()
-        if r.method == "POST":
-            return post(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}, json=loads(request)).json()
-        requests += 1
+        try: 
+            if r.method == "GET": 
+                response = get(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}).json()
+            if r.method == "POST":
+                response = post(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}, json=loads(request)).json()
 
-    except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
-    except ConnectTimeout: return {"success": False, "message": f"LegoProxy - Proxy Timed Out. Proxy IP: {proxy}"}
-    except ConnectionError: return {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
+            logRequest(r.method, subdomain, path, response)
+            return response
+        except JSONDecodeError: return {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
+        except ConnectTimeout: return {"success": False, "message": f"LegoProxy - Proxy Timed Out. Proxy IP: {proxy}"}
+        except ConnectionError: return {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
 
