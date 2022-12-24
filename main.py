@@ -79,6 +79,7 @@ async def robloxRequest(r: Request, subdomain: str, path: str, rotate: bool = Fa
         except JSONDecodeError: response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
         except ConnectTimeout: response = {"success": False, "message": "LegoProxy - Request Timed Out."}
         except ConnectionError: response = {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
+        except Exception as e: response = {"success": False, "message": "LegoProxy - Proxy Server encountered an unexpected error.", "exception": e}
         logRequest(r.method, subdomain, path, response, r.headers.get("User-Agent"))
         return response
     
@@ -95,6 +96,7 @@ async def robloxRequest(r: Request, subdomain: str, path: str, rotate: bool = Fa
         except JSONDecodeError: response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
         except ConnectTimeout: response = {"success": False, "message": f"LegoProxy - Proxy Timed Out. Proxy IP: {proxy}"}
         except ConnectionError: response = {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
+        except Exception as e: response = {"success": False, "message": "LegoProxy - Proxy Server encountered an unexpected error.", "exception": e}
         logRequest(r.method, subdomain, path, response, r.headers.get("User-Agent"))
         return response
 
