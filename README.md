@@ -3,6 +3,9 @@ A rotating Roblox Proxy for accessing Roblox APIs through HTTPService
 
 [![Join LegoProxy Discord](https://cdn.discordapp.com/attachments/1056074242325741578/1056131769977544735/image.png)](https://discord.gg/SnmVQ4NSTz)
 
+> LegoProxy is undergoing Rewrite.
+> The next rewrite will contain more features and other patches to prevent misuse of this proxy.
+
 ## Deploy LegoProxy
 More Deploy buttons will be added when i find a free hosting service that can host proxies like this.
 
