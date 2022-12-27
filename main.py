@@ -8,8 +8,6 @@ from core.auth.dashboard import validate_credentials
 from core.request import proxyRequest, resetRequestsCounter
 config = LegoProxyConfig()
 
-config.placeId = None
-config.proxyAuthKey = None
 config.maxRequests = 10
 
 config.rotate = True
