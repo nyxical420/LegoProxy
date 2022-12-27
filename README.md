@@ -26,8 +26,6 @@ Requesting to LegoProxy follows the following format:
 https://legoproxy.deta.dev/<subdomain>/<path>
 ```
 
-Please note that the Deta Deployment for LegoProxy is for testing purposes only and should not be used in your Roblox Game or Production Application.
-
 ## LegoProxy Features
 - Access to all Roblox APIs and Endpoints
 - Ability to Rotate to different IPs
