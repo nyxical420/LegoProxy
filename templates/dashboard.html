@@ -5,46 +5,63 @@
   <title>LegoProxy Dashboard</title>
   <link rel="stylesheet" href="static/style.css">
 </head>
-<body style="display: flex; background-color: #333333;">
-  <div class="container" style="flex: 1;">
-    <form class="login-form" action="/reconf" method="post" style="width: 500px; margin: auto;">
-      <div class="form-row">
-        <input type="number" id="placeId" name="placeId" placeholder="Roblox Place ID">
-      </div>
-      <div class="form-row">
-        <input type="number" id="maxRequests" name="maxRequests" placeholder="Max Requests (per Second)">
-      </div>
-      <div class="form-row">
-        <input type="text" id="proxyAuthKey" name="proxyAuthKey" placeholder="Proxy Authentication Key">
-      </div>
-      <div class="form-row">
-        <input type="text" id="webhook" name="webhook" placeholder="Discord Webhook URL">
-      </div>
-      <div class="form-row">
-        <input type="submit" value="Save Configuration">
-      </div>
-    </form>
-  </div>
-  <div class="container" style="flex: 1; height: 270px;">
-    <div id="logs-box">
-		<textarea id="logs" readonly style="resize: none; width: 500px; height: 205px;"></textarea>
-    </div>
-	<button class="toggle-button" style="resize: none; width: 500px;" onclick="toggleLogs()">Toggle Latest Log</button>
-  </div>
-  <script>
-    let logsVisible = true;
-    function toggleLogs() {
-      logsVisible = !logsVisible;
-      document.getElementById('logs-box').style.display = logsVisible ? 'block' : 'none';
-    }
+<body style="background-color: #333;">
+	<div class="dashboard">
+	 	<div class="configuration">
+	 	 	<h1 style="color: white; font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Proxy Configuration</h1>
+	 	 	<form action="/saveconf" method="post">
+	 	 	 	<div class="form-row">
+	 	 	 	  <input type="number" id="placeId" name="placeId" placeholder="Roblox Place ID">
+	 	 	 	</div>
+	 	 	 	<div class="form-row">
+	 	 	 	  	<input type="number" id="maxRequests" name="maxRequests" placeholder="Max Proxy Requests">
+	 	 	 	</div>
+	 	 	 	<div class="form-row">
+	 	 	 	  	<input type="text" id="proxyAuthKey" name="proxyAuthKey" placeholder="Proxy Authentication Key">
+	 	 	 	</div>
+	 	 	 	<div class="form-row">
+	 	 	 	  	<input type="text" id="webhook" name="webhook" placeholder="Discord Webhook URL">
+	 	 	 	</div>
+			<div class="form-row">
+				<input type="text" id="username" name="username" placeholder="LegoProxy Username">
+				<input type="password" id="password" name="password" placeholder="LegoProxy Password">
+			</div>
+	 	 	 	<div class="form-row">
+	 	 	 	  	<input type="submit" value="Save Changes">
+	 	 	 	</div>
+	 	 	</form>
+	 	</div>
+	 	<div class="logs">
+	 	  	<h1 style="color: white; font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Request Logs</h1>
+	 	  	<div id="logs-box">
+				<textarea id="logs" readonly style="resize: none; width: 500px; height: 250px; white-space: pre-line;"></textarea>
+	 	  	</div>
+			<input type="submit" style="background-color: #ff4b47;" href="/" value="Logout">
+	  	</div>
+	</div>
+	<script>
+		let latestLogs = "";
+		const logsTextarea = document.getElementById('logs');
+		
+		setInterval(() => {
+			fetch('/logs')
+			 	.then(response => response.text())
+			 	.then(logs => {
+			 	 	if (logs !== latestLogs) {
+			 	 		latestLogs = logs;
 
-    setInterval(() => {
-      fetch('/logs')
-        .then(response => response.text())
-        .then(logs => {
-          document.getElementById('logs').innerHTML = logs;
-        });
-    }, 5000);
-  </script>
+						if (logs !== ""){
+							logsTextarea.innerHTML += logs + "\n";
+						}
+					
+			 	 		const isScrollingUp = logsTextarea.scrollTop < logsTextarea.scrollHeight - logsTextarea.clientHeight;
+					
+			 	 		if (isScrollingUp) {
+			 	 		  logsTextarea.scrollTop = logsTextarea.scrollHeight;
+			 	 		}
+			 	 	}
+			 	});
+		}, 1000);
+	</script>
 </body>
 </html>

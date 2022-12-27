@@ -1,17 +1,23 @@
 from json import loads
-from random import choice
 from asyncio import sleep
-from httpx import post, AsyncClient
-from httpx._exceptions import ConnectError, ConnectTimeout, DecodingError
+from httpx import AsyncClient
+from json.decoder import JSONDecodeError
+from random import choice, randint, random
+from httpx._exceptions import ConnectError, ConnectTimeout
 
 from core.conf import LegoProxyConfig
 proxylist = open("proxies.txt", "r").read().split()
 
-def logRequest(method, subdomain, path, response, useragent, id, config: LegoProxyConfig):
-    data = {"content":None,"embeds":[{"title":f"LegoProxy Request Logs ({method}, {id})","color":3092790,"fields":[{"name":"Request Endpoint","value":f"**{subdomain}**.roblox.com","inline":True},{"name":"Request Path","value":f"[/{path}](https://users.roblox.com/{path})","inline":True},{"name":"Data Response","value":f"```json\n{response}\n```"}, {"name":"Request User-Agent","value":f"**{useragent}**"}]}],"username":"LegoProxy","avatar_url":"https://cdn.discordapp.com/attachments/1056074242325741578/1056074861690224720/legoproxy.png","attachments":[]}
+async def logRequest(method, subdomain, path, response, useragent, id, config: LegoProxyConfig):
+    requestId = ""
+    for i in range(7): requestId += chr(randint(ord('a'), ord('z'))) if random() < 0.5 else str(randint(0, 9))
+
+    data = {"content":None,"embeds":[{"title":f"LegoProxy Request Logs ({method}, {id}, {requestId})","color":3092790,"fields":[{"name":"Request Endpoint","value":f"**{subdomain}**.roblox.com","inline":True},{"name":"Request Path","value":f"[/{path}](https://users.roblox.com/{path})","inline":True},{"name":"Data Response","value":f"```json\n{response}\n```"}, {"name":"Request User-Agent","value":f"**{useragent}**"}]}],"username":"LegoProxy","avatar_url":"https://cdn.discordapp.com/attachments/1056074242325741578/1056074861690224720/legoproxy.png","attachments":[]}
+    proxyRequest.log = f"[{method} ({id}, {requestId})] LegoProxy --> {subdomain}.roblox.com/{path}\nResponse:\n{response}\nUser-Agent: {useragent}\n"
 
     if config.webhookUrl == "": return
-    post(config.webhookUrl, json=data)
+    async with AsyncClient() as cli:
+        await cli.post(config.webhookUrl, json=data)
 
 async def resetRequestsCounter():
     while True:
@@ -20,6 +26,8 @@ async def resetRequestsCounter():
 
 
 class proxyRequest():
+    log = ""
+    
     totalRequests = 0
     subdomain: str
     path: str
@@ -34,10 +42,10 @@ class proxyRequest():
 
     async def request(self, config: LegoProxyConfig):
         if self.subdomain in config.blacklistedSubdomains:
-            return {"success": False, "message": "LegoProxy - This subdomain is blacklisted."}
+            return {"success": False, "message": "LegoProxy - The Roblox API Subdomain is Blacklisted to this LegoProxy server."}
 
         if self.totalRequests > config.maxRequests:
-            return {"success": False, "message": "LegoProxy - Max Requests has been reached."}
+            return {"success": False, "message": "LegoProxy - Requests Overload. Please try again!"}
 
         if config.placeId != None: 
             if self.authRobloxId != config.placeId:
@@ -56,6 +64,10 @@ class proxyRequest():
                         response = await cli.get(f"https://{self.subdomain}.roblox.com/{self.path}")
                     if self.method == "POST":
                         response = await cli.post(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data))
+                    if self.method == "PATCH":
+                        response = await cli.patch(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data))
+                    if self.method == "DELETE":
+                        response = await cli.delete(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data))
                     
                     response = response.json()
             
@@ -65,10 +77,14 @@ class proxyRequest():
                         response = await cli.get(f"https://{self.subdomain}.roblox.com/{self.path}").json()
                     if self.method == "POST":
                         response = await cli.post(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data)).json()
+                    if self.method == "PATCH":
+                        response = await cli.patch(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data)).json()
+                    if self.method == "DELETE":
+                        response = await cli.delete(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data)).json()
 
                     response = response.json()
 
-        except DecodingError: 
+        except JSONDecodeError: 
             response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
 
         except ConnectTimeout: 
@@ -79,5 +95,5 @@ class proxyRequest():
             response = {"success": False, "message": "LegoProxy - Roblox API Subdomain does not exist."}
 
         self.totalRequests += 1
-        logRequest(self.method, self.subdomain, self.path, response, self.authUserAgent, config.placeId, config)
+        await logRequest(self.method, self.subdomain, self.path, response, self.authUserAgent, config.placeId, config)
         return response
