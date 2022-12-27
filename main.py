@@ -9,8 +9,7 @@ config = LegoProxyConfig()
 
 config.placeId = None
 config.proxyAuthKey = None
-config.maxRequests = 1
-config.webhookUrl = "https://discord.com/api/webhooks/1056074269026680872/J0ufhobbM8hHLUR3XXwfaX96h_6u9RSazgnmsQC_Z843ZZbMVa9YWzEVhp65Yst7j9M5"
+config.maxRequests = 10
 
 config.rotate = True
 config.dashboardEnabled = True
