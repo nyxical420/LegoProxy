@@ -11,12 +11,9 @@ config = LegoProxyConfig()
 config.placeId = None
 config.proxyAuthKey = None
 config.maxRequests = 10
-config.webhookUrl = "https://discord.com/api/webhooks/1057149841790214236/JdARQz8QaQUHdZzDl_h7SBGjnowXbMZEb5bt_N7wBoJ9eQQTm3kxHm-f1bxtbcQV2Ifk"
 
 config.rotate = True
 config.dashboardEnabled = True
-config.dashboardUsername = "tsuki"
-config.dashboardPassword = "tsukiaoki"
 
 app = FastAPI(
     title="LegoProxy",
