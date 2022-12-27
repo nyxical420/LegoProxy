@@ -1,102 +1,82 @@
-from os import getenv
-from json import loads
-from random import choice
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from asyncio import create_task, sleep
+from asyncio import create_task
+from fastapi import FastAPI, Request, Form
 from fastapi.responses import FileResponse
-from requests import get, post, JSONDecodeError
-from requests.exceptions import ConnectionError, ConnectTimeout
-load_dotenv(".env")
+
+from core.conf import LegoProxyConfig
+from core.auth.dashboard import validate_credentials
+from core.request import proxyRequest, resetRequestsCounter
+config = LegoProxyConfig()
+
+config.placeId = None
+config.proxyAuthKey = None
+config.maxRequests = 1
+config.webhookUrl = "https://discord.com/api/webhooks/1056074269026680872/J0ufhobbM8hHLUR3XXwfaX96h_6u9RSazgnmsQC_Z843ZZbMVa9YWzEVhp65Yst7j9M5"
+
+config.rotate = True
+config.dashboardEnabled = True
 
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
-    version="1.4",
+    version="1.5",
     docs_url="/docs",
     redoc_url=None
 )
 
-placeId = getenv("placeId")
-proxyAuthKey = str(getenv("proxyAuthKey"))
-maxRequests = int(getenv("maxRequests"))
-webhook = str(getenv("webhook"))
-idLock = False if placeId == "" else True
-keyLock = False if proxyAuthKey == "" else True
-proxylist = open("proxies.txt", "r").read().strip().split()
-
-global requests
-requests = 0
-
-async def resetRequestsCounter():
-    global requests
-    while True: 
-        await sleep(60)
-        requests -= requests
-
-def logRequest(method, subdomain, path, response, useragent):
-    data = {"content":None,"embeds":[{"title":f"LegoProxy Request Logs ({method})","color":3092790,"fields":[{"name":"Request Endpoint","value":f"**{subdomain}**.roblox.com","inline":True},{"name":"Request Path","value":f"[/{path}](https://users.roblox.com/{path})","inline":True},{"name":"Data Response","value":f"```json\n{response}\n```"}, {"name":"Request User-Agent","value":f"**{useragent}**"}]}],"username":"LegoProxy","avatar_url":"https://cdn.discordapp.com/attachments/1056074242325741578/1056074861690224720/legoproxy.png","attachments":[]}
-
-    if webhook == "": return
-    post(getenv("webhook"), json=data)
+logs = "Hello, World!"
 
 @app.on_event("startup")
 async def on_start():
     create_task(resetRequestsCounter())
 
+## LegoProxy Dashboard
+
 @app.get("/")
-async def legoproxyHome():
-    return {"success": True, "message": "LegoProxy is Running!", "IdLock": idLock, "KeyLock": keyLock, "requestsCreated": requests, "maxRequests": maxRequests}
+@app.post("/")
+async def legoProxyHome(username: str = Form(None), password: str = Form(None)):
+    if not config.dashboardEnabled: return "Dashboard is Disabled."
+
+    if username == None: return FileResponse("./templates/login.html")
+    if password == None: return FileResponse("./templates/login.html")
+    authenticated = validate_credentials(username.lower(), password.lower())
+
+    if authenticated:
+        return FileResponse("./templates/dashboard.html")
+    else:
+        return FileResponse("./templates/login.html")
+
+@app.get("/logs")
+async def getLogs():
+    return logs
+
+@app.get("/saveconf")
+@app.post("/saveconf")
+async def saveConfig():
+    return "Not Available"
+
+
+@app.get("/static/{filepath:path}")
+async def getFile(filepath: str):
+    return FileResponse(f'static/{filepath}')
 
 @app.get("/favicon.ico")
 async def legoProxyFavicon():
     return FileResponse("legoproxy.ico")
 
+## Roblox Proxy
+
 @app.get("/{subdomain}/{path:path}", description="LegoProxy Roblox GET Request")
 @app.post("/{subdomain}/{path:path}", description="LegoProxy Roblox POST Request")
-async def robloxRequest(r: Request, subdomain: str, path: str, rotate: bool = False, request: str = None):
-    global requests
-    if requests >= maxRequests:
-        return {"success": False, "message": "LegoProxy - Max Requests has been reached. Please try again later!"}
+async def robloxRequest(r: Request, subdomain: str, path: str, request: str = None):
+    legoProxy = proxyRequest()
+    legoProxy.subdomain = subdomain
+    legoProxy.path = path
+    legoProxy.rotate = config.rotate
+    legoProxy.data = request
+    legoProxy.method = r.method
     
-    if idLock: 
-        if r.headers.get("Roblox-Id") != str(placeId):
-            return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
-    
-    if keyLock:
-        if r.headers.get("LP-AuthKey") != proxyAuthKey:
-            return {"success": False, "message": "LegoProxy - This proxy requires an Authentication Key."}
+    legoProxy.authKey = r.headers.get("LP-AuthKey")
+    legoProxy.authRobloxId = r.headers.get("Roblox-Id")
+    legoProxy.authUserAgent = r.headers.get("User-Agent")
 
-    requests += 1
-
-    if rotate == False:
-        try: 
-            if r.method == "GET":
-                response = get(f'https://{subdomain}.roblox.com/{path}').json()
-            if r.method == "POST":
-                response = post(f'https://{subdomain}.roblox.com/{path}', json=loads(request)).json()
-
-        except JSONDecodeError: response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
-        except ConnectTimeout: response = {"success": False, "message": "LegoProxy - Request Timed Out."}
-        except ConnectionError: response = {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
-        except Exception as e: response = {"success": False, "message": "LegoProxy - Proxy Server encountered an unexpected error.", "exception": e}
-        logRequest(r.method, subdomain, path, response, r.headers.get("User-Agent"))
-        return response
-    
-    if rotate == True:
-        if proxylist == []: return {"success": False, "message": "LegoProxy - Proxy IP List is Empty. Please add IPs and Restart LegoProxy."}
-        proxy = choice(proxylist)
-
-        try: 
-            if r.method == "GET": 
-                response = get(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}).json()
-            if r.method == "POST":
-                response = post(f'https://{subdomain}.roblox.com/{path}', proxies={"http": f"http://{proxy}"}, json=loads(request)).json()
-
-        except JSONDecodeError: response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
-        except ConnectTimeout: response = {"success": False, "message": f"LegoProxy - Proxy Timed Out. Proxy IP: {proxy}"}
-        except ConnectionError: response = {"success": False, "message": "LegoProxy - Roblox API Endpoint does not exist."}
-        except Exception as e: response = {"success": False, "message": "LegoProxy - Proxy Server encountered an unexpected error.", "exception": e}
-        logRequest(r.method, subdomain, path, response, r.headers.get("User-Agent"))
-        return response
-
+    return await legoProxy.request(config=config)

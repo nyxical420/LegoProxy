@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LegoProxy Dashboard</title>
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body style="display: flex; background-color: #333333;">
+  <div class="container" style="flex: 1;">
+    <form class="login-form" action="/reconf" method="post" style="width: 500px; margin: auto;">
+      <div class="form-row">
+        <input type="number" id="placeId" name="placeId" placeholder="Roblox Place ID">
+      </div>
+      <div class="form-row">
+        <input type="number" id="maxRequests" name="maxRequests" placeholder="Max Requests (per Second)">
+      </div>
+      <div class="form-row">
+        <input type="text" id="proxyAuthKey" name="proxyAuthKey" placeholder="Proxy Authentication Key">
+      </div>
+      <div class="form-row">
+        <input type="text" id="webhook" name="webhook" placeholder="Discord Webhook URL">
+      </div>
+      <div class="form-row">
+        <input type="submit" value="Save Configuration">
+      </div>
+    </form>
+  </div>
+  <div class="container" style="flex: 1; height: 270px;">
+    <div id="logs-box">
+		<textarea id="logs" readonly style="resize: none; width: 500px; height: 205px;"></textarea>
+    </div>
+	<button class="toggle-button" style="resize: none; width: 500px;" onclick="toggleLogs()">Toggle Latest Log</button>
+  </div>
+  <script>
+    let logsVisible = true;
+    function toggleLogs() {
+      logsVisible = !logsVisible;
+      document.getElementById('logs-box').style.display = logsVisible ? 'block' : 'none';
+    }
+
+    setInterval(() => {
+      fetch('/logs')
+        .then(response => response.text())
+        .then(logs => {
+          document.getElementById('logs').innerHTML = logs;
+        });
+    }, 5000);
+  </script>
+</body>
+</html>
