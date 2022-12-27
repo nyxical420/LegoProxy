@@ -18,7 +18,7 @@ config.dashboardEnabled = True
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
-    version="1.5",
+    version="1.5 unstable",
     docs_url="/docs",
     redoc_url=None
 )
