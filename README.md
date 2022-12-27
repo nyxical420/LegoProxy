@@ -26,11 +26,6 @@ Requesting to LegoProxy follows the following format:
 https://legoproxy.deta.dev/<subdomain>/<path>
 ```
 
-Requesting to LegoProxy follows the following format if you are going to request with a Rotating IP:
-```
-https://legoproxy.deta.dev/<subdomain>/<path>?rotate=true
-```
-
 Please note that the Deta Deployment for LegoProxy is for testing purposes only and should not be used in your Roblox Game or Production Application.
 
 ## LegoProxy Features
