@@ -31,7 +31,7 @@ https://legoproxy.deta.dev/<subdomain>/<path>
 - Ability to Rotate to different IPs
 - Accept Request only coming from your Roblox Game by Id
 - Verify Requests that is coming from you by an Authentication Key (a.k.a Password)
-- Limit Requests per minute to your Proxy (if you are hosting it publicly)
+- Limit Requests per second to your LegoProxy Server (if you are hosting it publicly)
 
 ## LegoProxy Disclaimer
 It is highly recommended to host LegoProxy by yourself if you are going to use it for Production Applications or Roblox Games. as you may be getting Fake or Forged data and slowdowns that could do damage to your Production Applocations or Roblox Games.
