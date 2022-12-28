@@ -1,29 +1,18 @@
-from json import loads
+import time
 from asyncio import sleep
-from httpx import AsyncClient
 from json.decoder import JSONDecodeError
-from random import choice, randint, random
-from httpx._exceptions import ConnectError, ConnectTimeout
+
+from httpx import AsyncClient
+from httpx._exceptions import ConnectError, ConnectTimeout, RequestError
 
 from core.conf import LegoProxyConfig
+
 proxylist = open("proxies.txt", "r").read().split()
-
-async def logRequest(method, subdomain, path, response, useragent, id, config: LegoProxyConfig):
-    requestId = ""
-    for i in range(7): requestId += chr(randint(ord('a'), ord('z'))) if random() < 0.5 else str(randint(0, 9))
-
-    data = {"content":None,"embeds":[{"title":f"LegoProxy Request Logs ({method}, {id}, {requestId})","color":3092790,"fields":[{"name":"Request Endpoint","value":f"**{subdomain}**.roblox.com","inline":True},{"name":"Request Path","value":f"[/{path}](https://users.roblox.com/{path})","inline":True},{"name":"Data Response","value":f"```json\n{response}\n```"}, {"name":"Request User-Agent","value":f"**{useragent}**"}]}],"username":"LegoProxy","avatar_url":"https://cdn.discordapp.com/attachments/1056074242325741578/1056074861690224720/legoproxy.png","attachments":[]}
-    proxyRequest.log = f"[{method} ({id}, {requestId})] LegoProxy --> {subdomain}.roblox.com/{path}\nResponse:\n{response}\nUser-Agent: {useragent}\n"
-
-    if config.webhookUrl == "": return
-    async with AsyncClient() as cli:
-        await cli.post(config.webhookUrl, json=data)
 
 async def resetRequestsCounter():
     while True:
         await sleep(1)
         proxyRequest.totalRequests -= proxyRequest.totalRequests
-
 
 class proxyRequest():
     log = ""
@@ -31,16 +20,27 @@ class proxyRequest():
     totalRequests = 0
     subdomain: str
     path: str
-    data: str
+    data: dict
     method: str
-    rotate: bool
 
     authRobloxId: int
     authKey: str
 
     authUserAgent: str
 
+    last_used_proxy = -1
+    cache = {}
+    cache_expiry_time = 1800
+
     async def request(self, config: LegoProxyConfig):
+        cache_key = (self.subdomain, self.path, tuple(self.data.items()), self.method)
+        if cache_key in self.cache:
+            cache_entry = self.cache[cache_key]
+            if cache_entry["timestamp"] + self.cache_expiry_time > time.time():
+                return cache_entry["response"]
+            else:
+                del self.cache[cache_key]
+
         if self.subdomain in config.blacklistedSubdomains:
             return {"success": False, "message": "LegoProxy - The Roblox API Subdomain is Blacklisted to this LegoProxy server."}
 
@@ -49,51 +49,38 @@ class proxyRequest():
 
         if config.placeId != None: 
             if self.authRobloxId != config.placeId:
-                if self.authRobloxId != config.blacklistedGameIds:
-                    return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
+                return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
 
         if config.proxyAuthKey != None:
             if self.authKey != config.proxyAuthKey:
                 return {"success": False, "message": "LegoProxy - This proxy requires an Authentication Key."}
 
-        try:
-            if self.rotate:
-                proxy = choice(proxylist)
-                async with AsyncClient(proxies={"http://": f"http://{proxy}"}) as cli:
-                    if self.method == "GET":
-                        response = await cli.get(f"https://{self.subdomain}.roblox.com/{self.path}")
-                    if self.method == "POST":
-                        response = await cli.post(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data))
-                    if self.method == "PATCH":
-                        response = await cli.patch(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data))
-                    if self.method == "DELETE":
-                        response = await cli.delete(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data))
-                    
-                    response = response.json()
-            
-            if not self.rotate:
-                async with AsyncClient() as cli:
-                    if self.method == "GET":
-                        response = await cli.get(f"https://{self.subdomain}.roblox.com/{self.path}").json()
-                    if self.method == "POST":
-                        response = await cli.post(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data)).json()
-                    if self.method == "PATCH":
-                        response = await cli.patch(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data)).json()
-                    if self.method == "DELETE":
-                        response = await cli.delete(f"https://{self.subdomain}.roblox.com/{self.path}", data=loads(self.data)).json()
+        self.last_used_proxy = (self.last_used_proxy + 1) % len(proxylist)
+        proxy = proxylist[self.last_used_proxy]
 
-                    response = response.json()
+        try:
+            async with AsyncClient(proxies={"http://": f"http://{proxy}"}, http2=True) as cli:
+                req = cli.build_request(self.method, f"https://{self.subdomain}.roblox.com/{self.path}", data=self.data)
+                res = await cli.send(req)
+                response = res.json()     
 
         except JSONDecodeError: 
             response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
 
         except ConnectTimeout: 
-            if not self.rotate: response = {"success": False, "message": "LegoProxy - Request Timed Out."}
-            if self.rotate: response = {"success": False, "message": f"LegoProxy - Request Timed Out. Proxy IP: {proxy}"}
+            response = {"success": False, "message": f"LegoProxy - Connection Timeout. Proxy IP {proxy} could be a dead proxy."}
 
         except ConnectError: 
             response = {"success": False, "message": "LegoProxy - Roblox API Subdomain does not exist."}
+        
+        except RequestError:
+            response = {"success": False, "message": "LegoProxy - Failed to create a request."}
 
         self.totalRequests += 1
-        await logRequest(self.method, self.subdomain, self.path, response, self.authUserAgent, config.placeId, config)
+
+        self.cache[cache_key] = {
+            "timestamp": time.time(),
+            "response": response,
+        }
         return response
+

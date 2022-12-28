@@ -6,7 +6,6 @@ class LegoProxyConfig():
     rotate: bool = False
 
     blacklistedSubdomains: list[str] = ["servers"]
-    blacklistedGameIds: list[int] = []
 
     dashboardEnabled: bool = False
 
