@@ -8,26 +8,23 @@ from core.auth.dashboard import validate_credentials
 from core.request import proxyRequest, resetRequestsCounter
 config = LegoProxyConfig()
 
-config.maxRequests = 10
-
+config.maxRequests = 50
 config.dashboardEnabled = True
+config.dashboardUsername = "admin"
+config.dashboardPassword = "admin"
 
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
-    version="1.5 unstable",
+    version="1.5",
     docs_url="/docs",
     redoc_url=None
 )
 
 redirectAuth = ""
-
-def generateAuth():
-    temp = ""
-    for i in range(32):
-        random_char = chr(randint(ord('a'), ord('z'))) if random() < 0.5 else str(randint(0, 9))
-        temp += random_char
-
+for i in range(32): 
+    redirectAuth += chr(randint(ord('a'), ord('z'))) if random() < 0.5 else str(randint(0, 9))
+        
 @app.on_event("startup")
 async def on_start():
     create_task(resetRequestsCounter())
@@ -36,15 +33,14 @@ async def on_start():
 
 @app.get("/")
 @app.post("/")
-async def legoProxyHome(r: Request, username: str = Form(None), password: str = Form(None)):
-    if not config.dashboardEnabled: return "Dashboard is Disabled."
+async def legoProxyHome(r: Request, username: str = Form(""), password: str = Form("")):
+    if not config.dashboardEnabled: return {"success": True, "message": "LegoProxy is Running!"}
 
     if r.headers.get("RedirectAuth") == redirectAuth:
-        generateAuth()
         return FileResponse("./templates/dashboard.html")
 
-    if username == None: return FileResponse("./templates/login.html")
-    if password == None: return FileResponse("./templates/login.html")
+    if username == "": return FileResponse("./templates/login.html")
+    if password == "": return FileResponse("./templates/login.html")
     authenticated = validate_credentials(username.lower(), password.lower(), config)
 
     if authenticated: return FileResponse("./templates/dashboard.html")
@@ -55,7 +51,7 @@ async def getLogs():
     return HTMLResponse(proxyRequest.log)
 
 @app.post("/saveconf")
-async def saveConfig(placeId: int = Form(None), maxRequests: int = Form(100), proxyAuthKey: str = Form(None), username: str = Form(None), password: str = Form(None)):
+async def saveConfig(placeId: int = Form(None), maxRequests: int = Form(50), proxyAuthKey: str = Form(None), username: str = Form(None), password: str = Form(None)):
     try: authenticated = validate_credentials(username.lower(), password.lower(), config)
     except AttributeError: authenticated = False
         
@@ -72,10 +68,9 @@ async def getFile(filepath: str):
 
 @app.get("/favicon.ico")
 async def legoProxyFavicon():
-    return FileResponse("legoproxy.ico")
+    return FileResponse("assets/legoproxy.ico")
 
 ## Roblox Proxy
-
 
 @app.get("/{subdomain}/{path:path}", description="LegoProxy Roblox GET Request")
 @app.post("/{subdomain}/{path:path}", description="LegoProxy Roblox POST Request")

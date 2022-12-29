@@ -5,10 +5,10 @@ class LegoProxyConfig():
     placeId: int = None
     rotate: bool = False
 
-    blacklistedSubdomains: list[str] = ["servers"]
+    blacklistedSubdomains: list = ["servers"]
 
     dashboardEnabled: bool = False
 
     # Username and Password must be lowercase.
-    dashboardUsername: str = "admin"
+    dashboardUsername: str = None
     dashboardPassword: str = None
