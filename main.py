@@ -11,8 +11,6 @@ config = LegoProxyConfig()
 config.maxRequests = 10
 
 config.dashboardEnabled = True
-config.dashboardUsername = "admintsuki"
-config.dashboardPassword = "aokidashboard"
 
 app = FastAPI(
     title="LegoProxy",
