@@ -18,12 +18,12 @@ https://users.roblox.com/v1/users/1
 
 But with LegoProxy, You will have to place the Endpoint from the URL path before the API path you want to create a GET Request from:
 ```
-https://legoproxy.deta.dev/users/v1/users/1
+https://legoproxy.veriblox.ml/users/v1/users/1
 ```
 
 Requesting to LegoProxy follows the following format:
 ```
-https://legoproxy.deta.dev/<subdomain>/<path>
+https://legoproxy.veriblox.ml/<subdomain>/<path>
 ```
 
 ## LegoProxy Features
