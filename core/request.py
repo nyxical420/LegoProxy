@@ -59,7 +59,7 @@ class proxyRequest():
             async with AsyncClient(proxies={"http://": f"http://{proxy}"}) as cli:
                 req = cli.build_request(self.method, f"https://{self.subdomain}.roblox.com/{self.path}", data=self.data)
                 res = await cli.send(req)
-                response = res.json()     
+                response = res.json()
 
         except JSONDecodeError: 
             response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}
