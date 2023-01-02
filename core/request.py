@@ -33,12 +33,13 @@ class proxyRequest():
     cacheExpiry = 900 # 15 Minutes
 
     async def request(self, config: LegoProxyConfig):
-        cache_key = (self.subdomain, self.path, tuple(self.data.items()), self.method)
-        if cache_key in self.cache:
-            cache_entry = self.cache[cache_key]
-            if cache_entry["timestamp"] + self.cacheExpiry > time():
-                return cache_entry["response"]
-            else: del self.cache[cache_key]
+        if config.caching:
+            cache_key = (self.subdomain, self.path, tuple(self.data.items()), self.method)
+            if cache_key in self.cache:
+                cache_entry = self.cache[cache_key]
+                if cache_entry["timestamp"] + self.cacheExpiry > time():
+                    return cache_entry["response"]
+                else: del self.cache[cache_key]
 
         if self.subdomain in config.blacklistedSubdomains:
             return {"success": False, "message": "LegoProxy - The Roblox API Subdomain is Blacklisted to this LegoProxy server."}
@@ -74,6 +75,6 @@ class proxyRequest():
             response = {"success": False, "message": "LegoProxy - Failed to create a request."}
 
         self.totalRequests += 1
-        self.cache[cache_key] = {"timestamp": time(), "response": response}
+        if config.caching: self.cache[cache_key] = {"timestamp": time(), "response": response}
         return response
 

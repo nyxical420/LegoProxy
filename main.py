@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse
 from core.conf import LegoProxyConfig
 from core.auth.dashboard import validate_credentials
 from core.request import proxyRequest, resetRequestsCounter
+
 config = LegoProxyConfig()
 
 config.maxRequests = 50
@@ -13,15 +14,16 @@ config.dashboardEnabled = True
 config.dashboardUsername = "admin"
 config.dashboardPassword = "admin"
 
+redirectAuth = ""
+
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
-    version="1.5",
+    version="1.6",
     docs_url="/docs",
     redoc_url=None
 )
 
-redirectAuth = ""
 for i in range(32): 
     redirectAuth += chr(randint(ord('a'), ord('z'))) if random() < 0.5 else str(randint(0, 9))
         
@@ -60,6 +62,7 @@ async def saveConfig(placeId: int = Form(None), maxRequests: int = Form(50), pro
         config.maxRequests = maxRequests
         config.proxyAuthKey = proxyAuthKey
         return RedirectResponse("/", headers={"RedirectAuth": redirectAuth})
+
     else: return RedirectResponse("/")
 
 @app.get("/static/{filepath:path}")

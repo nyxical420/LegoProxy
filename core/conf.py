@@ -3,7 +3,7 @@ class LegoProxyConfig():
     maxRequests: int = None
     webhookUrl: str = None
     placeId: int = None
-    rotate: bool = False
+    caching: bool = True
 
     blacklistedSubdomains: list = []
 
