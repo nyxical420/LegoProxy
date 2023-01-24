@@ -11,7 +11,7 @@ from core.request import proxyRequest, resetRequestsCounter
 
 config = LegoProxyConfig()
 
-config.caching = False
+config.caching = True
 config.maxRequests = 50
 config.dashboardUsername = "admin"
 config.dashboardPassword = "admin"
