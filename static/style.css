@@ -1,102 +1,119 @@
 body {
-  font-family: Arial, sans-serif;
+  background-color: #111;
+  height: 100%;
   margin: 0;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
 }
 
-h1 {
+@font-face {
+  font-family: 'Comic Neue Angular';
+  src: url('ComicNeueAngular.woff') format('woff');
+}
+
+topnav {
+  display: flex;
+  align-items: center;
+  margin-left: auto; 
+  margin-right: auto; 
+  width: 75%;
+}
+
+text {
+  font-family:'Comic Neue Angular';
+  color: white;
+}
+
+button {
+  font-family: 'Comic Neue Angular';
+  background-color: #333;
+  border: none;
+  color: white;
   text-align: center;
-  color: #333;
-  margin: 20px 0;
-}
-
-.login-form {
-  width: 300px;
-  text-align: left;
-}
-
-.form-row {
-  display: flex;
   align-items: center;
-  margin-bottom: 20px;
-}
-
-label {
-  width: 120px;
-  font-weight: bold;
-  color: #333;
-}
-
-input[type="text"], input[type="password"], input[type="number"] {
-  flex: 1;
-  padding: 8px;
-  color: #333;
-  border: 1px solid #777777;
-  border-radius: 4px;
-  box-sizing: border-box;
-  position: relative;
-}
-
-input[type="text"]::placeholder, input[type="password"]::placeholder {
-  color: #777777;
-}
-
-input[type="text"]::-webkit-input-placeholder, input[type="password"]::-webkit-input-placeholder {
-  color: #777777;
-}
-
-input[type="text"]::-ms-input-placeholder, input[type="password"]::-ms-input-placeholder {
-  color: #777777;
-}
-
-label[for="username"], label[for="password"] {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  font-size: 14px;
-  color: #333;
-  pointer-events: none;
-}
-
-input[type="submit"] {
-  width: 100%;
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px;
-  border: none;
-  border-radius: 4px;
+  font-size: 20px;
+  transition: 0.5s;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-input[type="submit"]:hover {
-  background-color: #45a049;
+button:hover {
+  background-color: #fff;
+  color: #111;
 }
 
-.container {
-  width: 300px;
-  margin: 0 auto;
-  text-align: left;
+button:hover[type="red"] {
+  background-color: rgb(255, 69, 69);
+  color: #111;
 }
 
-form, #logs {
-  width: 100%;
+button:hover[type="green"] {
+  background-color: rgb(69, 255, 69);
+  color: #111;
 }
 
-.toggle-button {
-  width: 100%;
-  background-color: #4CAF50;
-  color: white;
-  padding: 12px;
+
+input {
+  font-family: 'Comic Neue Angular';
+  background-color: #333;
   border: none;
-  border-radius: 4px;
+  color: white;
+  text-align: center;
+  align-items: center;
+  font-size: 20px;
+  transition: 0.4s;
+  border-radius: 5px;
   cursor: pointer;
 }
 
-.toggle-button:hover {
-  background-color: #45a049;
+input:hover {
+  background-color: #444;
+  color: #fff;
 }
 
+input:focus{
+  background-color: #222;
+  color: #fff;
+  outline: none;
+}
+
+input:focus::placeholder {
+  color: #888;
+  outline: none;
+}
+
+a {
+  display: inline-block;
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+a:link {
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  font-family: 'Comic Neue Angular';
+  color: #999;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:active {
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}

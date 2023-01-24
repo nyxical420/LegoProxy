@@ -1,12 +1,11 @@
 class LegoProxyConfig():
-    proxyAuthKey: str = None
-    maxRequests: int = None
-    webhookUrl: str = None
-    placeId: int = None
+    proxyAuthKey: str = ""
+    maxRequests: int = 0
+    placeId: int = 0
     caching: bool = True
+    expiry: int = 0
 
     blacklistedSubdomains: list = []
 
-    dashboardEnabled: bool = False
     dashboardUsername: str = None
     dashboardPassword: str = None

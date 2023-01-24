@@ -7,17 +7,19 @@ from httpx._exceptions import ConnectError, ConnectTimeout, RequestError
 
 from core.conf import LegoProxyConfig
 
+global totalRequests
 proxylist = open("assets/proxies.txt", "r").read().split()
+totalRequests = 0
 
 async def resetRequestsCounter():
+    global totalRequests
     while True:
         await sleep(1)
-        proxyRequest.totalRequests -= proxyRequest.totalRequests
+        totalRequests -= totalRequests
 
 class proxyRequest():
     log = ""
     
-    totalRequests = 0
     subdomain: str
     path: str
     data: dict
@@ -30,21 +32,27 @@ class proxyRequest():
 
     lastproxy = -1
     cache = {}
-    cacheExpiry = 900 # 15 Minutes
 
     async def request(self, config: LegoProxyConfig):
+        global totalRequests
+        cacheExpiry = config.expiry
+
         if config.caching:
+            print("caching")
             cache_key = (self.subdomain, self.path, tuple(self.data.items()), self.method)
+            print(cache_key)
             if cache_key in self.cache:
                 cache_entry = self.cache[cache_key]
-                if cache_entry["timestamp"] + self.cacheExpiry > time():
+                if cache_entry["timestamp"] + cacheExpiry > time():
                     return cache_entry["response"]
-                else: del self.cache[cache_key]
+                else:
+                    print("deleted cache") 
+                    del self.cache[cache_key]
 
         if self.subdomain in config.blacklistedSubdomains:
             return {"success": False, "message": "LegoProxy - The Roblox API Subdomain is Blacklisted to this LegoProxy server."}
 
-        if self.totalRequests > config.maxRequests:
+        if totalRequests > config.maxRequests:
             return {"success": False, "message": "LegoProxy - Requests Overload. Please try again!"}
 
         if config.placeId != None and self.authRobloxId != config.placeId: 
@@ -74,7 +82,7 @@ class proxyRequest():
         except RequestError:
             response = {"success": False, "message": "LegoProxy - Failed to create a request."}
 
-        self.totalRequests += 1
+        totalRequests += 1
         if config.caching: self.cache[cache_key] = {"timestamp": time(), "response": response}
         return response
 
