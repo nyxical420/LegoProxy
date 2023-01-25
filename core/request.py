@@ -58,7 +58,7 @@ class proxyRequest():
         if config.placeId != 0 and self.authRobloxId != config.placeId: 
             return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
 
-        if config.proxyAuthKey != None and self.authKey != config.proxyAuthKey:
+        if config.proxyAuthKey != "" and self.authKey != config.proxyAuthKey:
             return {"success": False, "message": "LegoProxy - This proxy requires an Authentication Key."}
 
         self.lastproxy = (self.lastproxy + 1) % len(proxylist)
