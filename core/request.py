@@ -55,7 +55,7 @@ class proxyRequest():
         if totalRequests > config.maxRequests:
             return {"success": False, "message": "LegoProxy - Requests Overload. Please try again!"}
 
-        if config.placeId != None and self.authRobloxId != config.placeId: 
+        if config.placeId != 0 and self.authRobloxId != config.placeId: 
             return {"success": False, "message": "LegoProxy - This proxy is only accepting requests from a Roblox Game."}
 
         if config.proxyAuthKey != None and self.authKey != config.proxyAuthKey:
