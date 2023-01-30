@@ -13,8 +13,8 @@ config = LegoProxyConfig()
 
 config.caching = True
 config.maxRequests = 50
-config.dashboardUsername = "TsukiAoki"
-config.dashboardPassword = "idontthinkyoucanlogintothisdashboardloln"
+config.dashboardUsername = "admin"
+config.dashboardPassword = "admin"
 
 redirectAuth = ""
 
