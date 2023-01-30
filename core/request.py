@@ -1,5 +1,6 @@
 from time import time
 from asyncio import sleep
+from datetime import datetime
 from json.decoder import JSONDecodeError
 
 from httpx import AsyncClient
@@ -24,6 +25,7 @@ class proxyRequest():
     path: str
     data: dict
     method: str
+    params: str = None
 
     authRobloxId: int
     authKey: str
@@ -38,15 +40,12 @@ class proxyRequest():
         cacheExpiry = config.expiry
 
         if config.caching:
-            print("caching")
             cache_key = (self.subdomain, self.path, tuple(self.data.items()), self.method)
-            print(cache_key)
             if cache_key in self.cache:
                 cache_entry = self.cache[cache_key]
                 if cache_entry["timestamp"] + cacheExpiry > time():
                     return cache_entry["response"]
                 else:
-                    print("deleted cache") 
                     del self.cache[cache_key]
 
         if self.subdomain in config.blacklistedSubdomains:
@@ -66,9 +65,17 @@ class proxyRequest():
 
         try:
             async with AsyncClient(proxies={"http://": f"http://{proxy}"}) as cli:
-                req = cli.build_request(self.method, f"https://{self.subdomain}.roblox.com/{self.path}", data=self.data)
+                if self.params == None:
+                    req = cli.build_request(self.method, f"https://{self.subdomain}.roblox.com/{self.path}", data=self.data)
+                else:
+                    req = cli.build_request(self.method, f"https://{self.subdomain}.roblox.com/{self.path}?{self.params}", data=self.data)
+
                 res = await cli.send(req)
                 response = res.json()
+
+                t = datetime.now()
+                c = t.strftime("%I:%M:%S.%f %p")
+                proxyRequest.log = f"<text style='color: rgb(69, 255, 69)'>[ {t.month}/{t.day} @ {c} :: {self.method} ]</text><br><text><text style='color: #75b2eb;'>Lego</text><text style='color: #87d997;'>Proxy</text> --> ({self.subdomain}) {self.path}<br>{response}</text><br>"
 
         except JSONDecodeError: 
             response = {"success": False, "message": "LegoProxy - Roblox API did not return JSON Data."}

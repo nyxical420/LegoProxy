@@ -1,10 +1,10 @@
+from datetime import datetime
 from asyncio import create_task
 from random import randint, random
 from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse, JSONResponse, Response
 
 from base64 import b64encode
-
 from core.conf import LegoProxyConfig
 from core.auth.dashboard import validate_credentials
 from core.request import proxyRequest, resetRequestsCounter
@@ -13,15 +13,15 @@ config = LegoProxyConfig()
 
 config.caching = True
 config.maxRequests = 50
-config.dashboardUsername = "admin"
-config.dashboardPassword = "admin"
+config.dashboardUsername = "TsukiAoki"
+config.dashboardPassword = "idontthinkyoucanlogintothisdashboardloln"
 
 redirectAuth = ""
 
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
-    version="1.6",
+    version="1.7",
     docs_url=None,
     redoc_url=None
 )
@@ -48,7 +48,7 @@ async def legoProxyHome(r: Request, username: str = Form(""), password: str = Fo
     if password == "": return FileResponse("./templates/login.html")
     authenticated = validate_credentials(username, password, config)
 
-    if authenticated:
+    if authCookie == None and authenticated:
         response = RedirectResponse("/")
         authcookie = b64encode(username.encode("ascii")).decode("utf-8") + "." + b64encode(password.encode("ascii")).decode("utf-8")
         response.set_cookie("legoproxy_auth", value=f"{authcookie}", expires=1800)
@@ -79,7 +79,8 @@ async def documentation():
 
 @app.get("/logs")
 async def getLogs():
-    return HTMLResponse(proxyRequest.log)
+    print(proxyRequest.log)
+    return proxyRequest.log
 
 @app.get("/getconf")
 async def getConfig():
@@ -100,6 +101,10 @@ async def saveConfig(r: Request):
         if data["maxRequests"] != 0: config.maxRequests = data["maxRequests"]
         if data["proxyAuthKey"] != "": config.proxyAuthKey = data["proxyAuthKey"]
         if data["cacheExpiry"] != 0: config.expiry = data["cacheExpiry"]
+
+        t = datetime.now()
+        c = t.strftime("%I:%M:%S.%f %p")
+        proxyRequest.log = f"<text style='color: rgb(69, 255, 69)'>[ {t.month}/{t.day} @ {c} :: POST ]</text><br><text><text style='color: #75b2eb;'>Lego</text><text style='color: #87d997;'>Proxy</text> Configuration has been saved.</text><br>"
         return "Configuration Saved"
 
 @app.get("/static/{filepath:path}")
@@ -122,6 +127,7 @@ async def robloxRequest(r: Request, subdomain: str, path: str, request: dict = B
     legoProxy.path = path
     legoProxy.data = request
     legoProxy.method = r.method
+    legoProxy.params = r.query_params
     
     legoProxy.authKey = r.headers.get("LP-AuthKey")
     legoProxy.authRobloxId = r.headers.get("Roblox-Id")

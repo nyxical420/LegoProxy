@@ -14,7 +14,7 @@
 			<text style="text-align: left; font-size: 25px;">Logged in as:<br><text id="username" name="username" style="color: #87d997;"></text></text>
 			<button type="red" style="height: 50px; width: 150px;" onclick="location.href='/logout'">Log Out</button>
 		</div>
-
+		
 		<div class="container" style="margin-top: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px 20px;">
 			<div class="container">
 				<text style="font-size: 30px;">Proxy Configuration</text><br><br>
@@ -22,10 +22,37 @@
 				<input type="number" id="maxRequests" name="maxRequests" style="border-radius: 5px; height: 25px; width: 100%;" placeholder="Max Proxy Requests (per second | 75< ~ 200)"></input><br><br>
 				<input type="number" id="cacheExpiry" name="cacheExpiry" style="border-radius: 5px; height: 25px; width: 100%;" placeholder="Cache Expiry (seconds)"></input><br><br>
 				<input type="text" id="proxyAuth" name="proxyAuth" style="border-radius: 5px; height: 25px; width: 100%;" placeholder="Proxy Authentication Key"></input><br><br>
+				<button type="green" id="save" style="height: 45px; width: 100%;" onclick="saveConfiguration()">Save Changes</button><br><br>
 			</div>
 			
-		</div><br><br>
-		<button type="green" style="height: 45px; width: 100%;" onclick="saveConfiguration()">Save Changes</button><br><br>
+			<div class="container" style="height: 300px;">
+				<text style="font-size: 30px;">Proxy Logs</text><br><br>
+				<div id="logs" style="overflow: auto; height: 100%;">
+					<div id="existing-element"></div>
+				</div>
+
+				<script>
+					var container = document.getElementById("logs");
+					let lastLog = '';
+					window.onload = function() {
+						setInterval(function() {
+						  fetch('/logs')
+							.then(response => response.text())
+							.then(data => {
+							  if (data !== lastLog) {
+								lastLog = data;
+								var newElement = document.createElement("div");
+								newElement.innerHTML = data.replace('"', "");
+								container.insertBefore(newElement, container.firstChild);
+							  }
+							});
+						}, 500);
+					}
+				</script>
+			</div>
+
+			
+		</div><br><br><br><br>
 		<div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px 20px;">
 			<button style="height: 25px; width: 100%;" onclick="location.href='/docs'">Documentation</button>
 			<button style="height: 25px; width: 100%;" onclick="location.href='https://discord.gg/SnmVQ4NSTz'">Discord</button>
@@ -38,7 +65,7 @@
 		 	const maxRequests = document.getElementById('maxRequests').value;
 		 	const proxyAuth = document.getElementById('proxyAuth').value;
 		 	const cacheExpiry = document.getElementById('cacheExpiry').value;
-
+			
 		 	fetch('/saveconf', {
 		 	 	method: 'POST',
 		 	 	headers: {
@@ -68,7 +95,7 @@
 			fetch("/getconf")
     		.then(response => response.json())
     		.then(data => {
-    		  document.getElementById("placeId").value = data.placeId;
+    		  document.getElementById("placeId").value = data.placeId !== 0 ? value : "";
     		  document.getElementById("maxRequests").value = data.maxRequests;
     		  document.getElementById("cacheExpiry").value = data.cacheExpiry;
     		  document.getElementById("proxyAuth").value = data.proxyAuth !== undefined ? value : "";

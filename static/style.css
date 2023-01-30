@@ -7,7 +7,7 @@ body {
 
 @font-face {
   font-family: 'Comic Neue Angular';
-  src: url('ComicNeueAngular.woff') format('woff');
+  src: url('https://cdn.glitch.global/2c158a50-1e93-455c-b595-19267bda693b/ComicNeueAngular.woff') format('woff');
 }
 
 topnav {
@@ -39,18 +39,20 @@ button {
 button:hover {
   background-color: #fff;
   color: #111;
+  /* box-shadow: 0 0 15px #fff; */
 }
 
 button:hover[type="red"] {
   background-color: rgb(255, 69, 69);
+  /* box-shadow: 0 0 15px rgb(255, 69, 69); */
   color: #111;
 }
 
 button:hover[type="green"] {
   background-color: rgb(69, 255, 69);
+  /* box-shadow: 0 0 15px rgb(69, 255, 69); */
   color: #111;
 }
-
 
 input {
   font-family: 'Comic Neue Angular';
@@ -71,16 +73,23 @@ input:hover {
 }
 
 input:focus{
+  transition: 0.4s;
   background-color: #222;
   color: #fff;
   outline: none;
 }
 
 input:focus::placeholder {
-  color: #888;
+  transition: 0.4s;
+  color: #222;
   outline: none;
 }
 
+input:not(:focus)::placeholder {
+  transition: 0.4s;
+  color: #777;
+  outline: none;
+}
 a {
   display: inline-block;
   font-family: 'Comic Neue Angular';
