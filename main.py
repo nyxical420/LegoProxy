@@ -2,10 +2,8 @@ from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import FileResponse, RedirectResponse
 
 import json
-from time import time
-from random import choice
 from httpx import AsyncClient
-from base64 import b64encode, b64decode
+from base64 import b64encode
 from json.decoder import JSONDecodeError
 from httpx._exceptions import ConnectError, ConnectTimeout, RequestError
 
@@ -119,19 +117,6 @@ async def requestProxy(
             "success": False,
             "message": "This proxy requires an Authentication Key to complete a Request."
         }
-    
-    if config["cacheExpiry"] != 0:
-        cache = (request.method, subdomain, path, tuple(data.items()))
-
-        if cache in cacheDict:
-            cacheEntry = cacheDict[cache]
-
-            if cacheEntry["timestamp"] + config["cacheExpiry"] > time():
-                return cacheEntry["response"]
-            else:
-                del cacheDict[cache]
-
-    proxy = choice(proxylist)
 
     try:
         async with AsyncClient(proxies={"http://": f"http://{proxy}"}) as cli:
@@ -167,7 +152,6 @@ async def requestProxy(
             "message": "Failed to send a Request to the Roblox API."
         }
 
-    if config["cacheExpiry"] != 0: cacheDict[cache] = {"timestamp": time(), "response": response}
     return response
 
 
