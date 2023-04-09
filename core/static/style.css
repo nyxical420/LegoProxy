@@ -1,0 +1,128 @@
+body {
+  background-color: #111;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+@font-face {
+  font-family: 'Comic Neue Angular';
+  src: url('https://cdn.glitch.global/2c158a50-1e93-455c-b595-19267bda693b/ComicNeueAngular.woff') format('woff');
+}
+
+topnav {
+  display: flex;
+  align-items: center;
+  margin-left: auto; 
+  margin-right: auto; 
+  width: 75%;
+}
+
+text {
+  font-family:'Comic Neue Angular';
+  color: white;
+}
+
+button {
+  font-family: 'Comic Neue Angular';
+  background-color: #333;
+  border: none;
+  color: white;
+  text-align: center;
+  align-items: center;
+  font-size: 20px;
+  transition: 0.5s;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #fff;
+  color: #111;
+  /* box-shadow: 0 0 15px #fff; */
+}
+
+button:hover[type="red"] {
+  background-color: rgb(255, 69, 69);
+  /* box-shadow: 0 0 15px rgb(255, 69, 69); */
+  color: #111;
+}
+
+button:hover[type="green"] {
+  background-color: rgb(69, 255, 69);
+  /* box-shadow: 0 0 15px rgb(69, 255, 69); */
+  color: #111;
+}
+
+input {
+  font-family: 'Comic Neue Angular';
+  background-color: #333;
+  border: none;
+  color: white;
+  text-align: center;
+  align-items: center;
+  font-size: 20px;
+  transition: 0.4s;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+input:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+input:focus{
+  transition: 0.4s;
+  background-color: #222;
+  color: #fff;
+  outline: none;
+}
+
+input:focus::placeholder {
+  transition: 0.4s;
+  color: #222;
+  outline: none;
+}
+
+input:not(:focus)::placeholder {
+  transition: 0.4s;
+  color: #777;
+  outline: none;
+}
+a {
+  display: inline-block;
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+  font-size: 20px;
+}
+
+a:link {
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  font-family: 'Comic Neue Angular';
+  color: #999;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:active {
+  font-family: 'Comic Neue Angular';
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}

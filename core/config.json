@@ -1,0 +1,7 @@
+{
+    "password": "legoproxy",
+    "placeId": 0,
+    "cacheExpiry": 300,
+    "proxyAuthKey": "",
+    "blacklistedSubdomains": []
+}

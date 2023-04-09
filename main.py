@@ -1,137 +1,174 @@
-from datetime import datetime
-from asyncio import create_task
-from random import randint, random
 from fastapi import FastAPI, Request, Form, Body
-from fastapi.responses import FileResponse, RedirectResponse, HTMLResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, RedirectResponse
 
-from base64 import b64encode
-from core.conf import LegoProxyConfig
-from core.auth.dashboard import validate_credentials
-from core.request import proxyRequest, resetRequestsCounter
+import json
+from time import time
+from random import choice
+from httpx import AsyncClient
+from base64 import b64encode, b64decode
+from json.decoder import JSONDecodeError
+from httpx._exceptions import ConnectError, ConnectTimeout, RequestError
 
-config = LegoProxyConfig()
-
-config.caching = True
-config.maxRequests = 50
-config.dashboardUsername = "admin"
-config.dashboardPassword = "admin"
-
-redirectAuth = ""
+def getConfig():
+    with open('./core/config.json', 'r') as f:
+        config = json.load(f)
+        return config
 
 app = FastAPI(
     title="LegoProxy",
-    description="A rotating Roblox Proxy for accessing Roblox APIs through HTTPService",
-    version="1.7",
+    description="A rotating Roblox API Proxy for accessing Roblox APIs through HTTPService",
+    version="v1.7",
     docs_url=None,
     redoc_url=None
 )
 
-for i in range(32): 
-    redirectAuth += chr(randint(ord('a'), ord('z'))) if random() < 0.5 else str(randint(0, 9))
-        
-@app.on_event("startup")
-async def on_start():
-    create_task(resetRequestsCounter())
-
-## LegoProxy Dashboard
+cacheDict = {}
+proxylist = open("./core/assets/proxies.txt", "r").read().split()
 
 @app.get("/")
 @app.post("/")
-async def legoProxyHome(r: Request, username: str = Form(""), password: str = Form("")):
-    authCookie = r.cookies.get("legoproxy_auth")
+async def proxyHome(
+    request: Request,
+    password: str = Form("")
+):
+    config = getConfig()
+    authenticationCookie = request.cookies.get("LP_Auth")
 
-    if authCookie != None:
-        if authCookie.__contains__(b64encode(config.dashboardUsername.encode("ascii")).decode("utf-8") + "." + b64encode(config.dashboardPassword.encode("ascii")).decode("utf-8")):
-            return FileResponse("./templates/dashboard.html")
+    if authenticationCookie != None:
+        if authenticationCookie.__contains__(b64encode(config["password"].encode("ascii")).decode("utf-8")):
+            return FileResponse("./core/pages/dashboard.html")
+        
+    if password == "":
+        return FileResponse("./core/pages/login.html")
 
-    if username == "": return FileResponse("./templates/login.html")
-    if password == "": return FileResponse("./templates/login.html")
-    authenticated = validate_credentials(username, password, config)
+    if authenticationCookie == None:
+        if str(config["password"]) == str(password):
+            response = RedirectResponse("/")
+            authcookie = b64encode(password.encode("ascii")).decode("utf-8")
+            response.set_cookie("LP_Auth", value=f"{authcookie}", max_age=3600)
+            return response
 
-    if authCookie == None and authenticated:
-        response = RedirectResponse("/")
-        authcookie = b64encode(username.encode("ascii")).decode("utf-8") + "." + b64encode(password.encode("ascii")).decode("utf-8")
-        response.set_cookie("legoproxy_auth", value=f"{authcookie}", expires=1800)
-        response.set_cookie("legoproxy_username", value=f"{username}", expires=1800)
-        return response
-
-    if authCookie == None and not authenticated:
-        return FileResponse("./templates/login.html")
-
-    # Logs the user out of the Dashboard if it does not meet any conditions.
-    # Possible Reason: Administrator changed dashboard credentials
+        if str(config["password"]) != str(password):
+            return FileResponse("./core/pages/login.html")
+    
     return RedirectResponse("/logout")
 
 @app.get("/logout")
 @app.post("/logout")
-async def logout():
+async def logoutProxy():
     response = RedirectResponse("/")
-    response.delete_cookie("legoproxy_auth")
-    response.delete_cookie("legoproxy_username")
+    response.delete_cookie("LP_Auth")
     return response
 
-
-@app.get("/docs")
-@app.get("/documentation")
-async def documentation():
-    return FileResponse("./templates/docs.html")
-
-
-@app.get("/logs")
-async def getLogs():
-    print(proxyRequest.log)
-    return proxyRequest.log
-
 @app.get("/getconf")
-async def getConfig():
+async def getConfiguration():
+    config = getConfig()
+
     return {
-        "placeId": config.placeId,
-        "maxRequests": config.maxRequests,
-        "proxyAuthKey": config.proxyAuthKey,
-        "cacheExpiry": config.expiry
+        "placeId": config["placeId"],
+        "proxyAuthKey": config["proxyAuthKey"],
+        "cacheExpiry": config["cacheExpiry"]
     }
 
 @app.post("/saveconf")
 async def saveConfig(r: Request):
+    config = getConfig()
     data = await r.json()
 
-    authCookie = r.cookies.get("legoproxy_auth")
-    if authCookie.__contains__(b64encode(config.dashboardUsername.encode("ascii")).decode("utf-8") + "." + b64encode(config.dashboardPassword.encode("ascii")).decode("utf-8")):
-        if data["placeId"] != 0: config.placeId = data["placeId"]
-        if data["maxRequests"] != 0: config.maxRequests = data["maxRequests"]
-        if data["proxyAuthKey"] != "": config.proxyAuthKey = data["proxyAuthKey"]
-        if data["cacheExpiry"] != 0: config.expiry = data["cacheExpiry"]
+    authenticationCookie = r.cookies.get("LP_Auth")
+    if authenticationCookie.__contains__(b64encode(config["password"].encode("ascii")).decode("utf-8")):
+        config["placeId"] = data["placeId"]
+        config["cacheExpiry"] = data["cacheExpiry"]
+        config["proxyAuthKey"] = data["proxyAuthKey"]
 
-        t = datetime.now()
-        c = t.strftime("%I:%M:%S.%f %p")
-        proxyRequest.log = f"<text style='color: rgb(69, 255, 69)'>[ {t.month}/{t.day} @ {c} :: POST ]</text><br><text><text style='color: #75b2eb;'>Lego</text><text style='color: #87d997;'>Proxy</text> Configuration has been saved.</text><br>"
+        with open('./core/config.json', 'w+') as f:
+            json.dump(config, f, indent=4)
+
         return "Configuration Saved"
 
 @app.get("/static/{filepath:path}")
 async def getFile(filepath: str):
-    return FileResponse(f'static/{filepath}')
-
-@app.get("/favicon.ico")
-async def legoProxyFavicon():
-    return FileResponse("assets/legoproxy.ico")
-
-## Roblox Proxy
+    return FileResponse(f'./core/static/{filepath}')
 
 @app.get("/{subdomain}/{path:path}", description="LegoProxy Roblox GET Request")
 @app.post("/{subdomain}/{path:path}", description="LegoProxy Roblox POST Request")
 @app.patch("/{subdomain}/{path:path}", description="LegoProxy Roblox PATCH Request")
 @app.delete("/{subdomain}/{path:path}", description="LegoProxy Roblox DELETE Request")
-async def robloxRequest(r: Request, subdomain: str, path: str, request: dict = Body({})):
-    legoProxy = proxyRequest()
-    legoProxy.subdomain = subdomain
-    legoProxy.path = path
-    legoProxy.data = request
-    legoProxy.method = r.method
-    legoProxy.params = r.query_params
-    
-    legoProxy.authKey = r.headers.get("LP-AuthKey")
-    legoProxy.authRobloxId = r.headers.get("Roblox-Id")
-    legoProxy.authUserAgent = r.headers.get("User-Agent")
+async def requestProxy(
+    request: Request,
+    subdomain: str,
+    path: str,
+    data: dict = Body({})
+):
+    config = getConfig()
 
-    return await legoProxy.request(config=config)
- 
+    if config["cacheExpiry"] != 0:
+        cache = (request.method, subdomain, path, tuple(data.items()))
+
+        if cache in cacheDict:
+            cacheEntry = cacheDict[cache]
+
+            if cacheEntry["timestamp"] + config["cacheExpiry"] > time():
+                return cacheEntry["response"]
+            else:
+                del cacheDict[cache]
+
+    if config["blacklistedSubdomains"].__contains__(subdomain):
+        return {
+            "success": False,
+            "message": "The Roblox API is Blacklisted to this LegoProxy Server."
+        }
+    
+    if config["placeId"] != 0 and request.headers.get("Roblox-Id") != config["placeId"]:
+        return {
+            "success": False,
+            "message": "This proxy is only accepting requests from a Roblox Game."
+        }
+
+    if config["proxyAuthKey"] != "" and request.headers.get("LP-AuthKey")!= config["proxyAuthKey"]:
+        return {
+            "success": False,
+            "message": "This proxy requires an Authentication Key to complete a Request."
+        }
+    
+    proxy = choice(proxylist)
+
+    try:
+        async with AsyncClient(proxies={"http://": f"http://{proxy}"}) as cli:
+            if request.query_params == None:
+                req = cli.build_request(request.method, f"https://{subdomain}.roblox.com/{path}", data=data)
+            else:
+                req = cli.build_request(request.method, f"https://{subdomain}.roblox.com/{path}?{request.query_params}", data=data)
+
+            res = await cli.send(req)
+            response = res.json()
+
+    except JSONDecodeError: 
+        response = {
+            "success": False,
+            "message": "The Roblox API did not return any JSON Data."
+        }
+
+    except ConnectTimeout: 
+        response = {
+            "success": False,
+            "message": f"Connection Timeout. Proxy IP {proxy} could be a dead proxy."
+        }
+
+    except ConnectError: 
+        response = {
+            "success": False,
+            "message": "The Roblox API Subdomain does not exist."
+        }
+    
+    except RequestError:
+        response = {
+            "success": False,
+            "message": "Failed to send a Request to the Roblox API."
+        }
+
+    if config["cacheExpiry"] != 0: cacheDict[cache] = {"timestamp": time(), "response": response}
+    return response
+
+
+

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LegoProxy Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+</head>
+<body>
+    <div style="top: 50%; left: 50%; position: fixed; transform: translate(-50%, -50%);">
+		<form class="container" method="post" action="/">
+			<div style="text-align: center;">
+				<img src="https://cdn.discordapp.com/attachments/1056074242325741578/1056074861690224720/legoproxy.png" alt="LegoProxy"><br>
+				<text style="font-size: 50px;"><text style="font-size: 50px; color: #75b2eb;">Lego</text><text style="font-size: 50px; color: #87d997;">Proxy</text> Dashboard</text><br>
+				<text style="font-size: 20px;">Running LegoProxy v1.7</text>
+			</div>
+	
+			<div style="text-align: center; align-items: center;"><br>
+				<input type="password" id="password" name="password" style="border-radius: 5px; height: 30px; width: 100%;" placeholder="LegoProxy Password"></input><br><br>
+				<button type="green" style="height: 45px; width: 101%;">Login</button><br><br>
+			</div>
+		</form>
+
+		<div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px 20px;">
+			<button style="height: 25px; width: 102%;" onclick="location.href='/docs'">Documentation</button>
+			<button style="height: 25px; width: 102%;" onclick="location.href='https://discord.gg/SnmVQ4NSTz'">Discord</button>
+		</div>
+    </div>
+</body>
+</html>
