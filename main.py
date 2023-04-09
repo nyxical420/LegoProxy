@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import FileResponse, RedirectResponse
 
 import json
+from random import choice
 from httpx import AsyncClient
-from base64 import b64encode
 from json.decoder import JSONDecodeError
 from httpx._exceptions import ConnectError, ConnectTimeout, RequestError
 
@@ -117,6 +117,8 @@ async def requestProxy(
             "success": False,
             "message": "This proxy requires an Authentication Key to complete a Request."
         }
+
+    proxy = choice(proxylist)
 
     try:
         async with AsyncClient(proxies={"http://": f"http://{proxy}"}) as cli:
