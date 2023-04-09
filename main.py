@@ -102,17 +102,6 @@ async def requestProxy(
 ):
     config = getConfig()
 
-    if config["cacheExpiry"] != 0:
-        cache = (request.method, subdomain, path, tuple(data.items()))
-
-        if cache in cacheDict:
-            cacheEntry = cacheDict[cache]
-
-            if cacheEntry["timestamp"] + config["cacheExpiry"] > time():
-                return cacheEntry["response"]
-            else:
-                del cacheDict[cache]
-
     if config["blacklistedSubdomains"].__contains__(subdomain):
         return {
             "success": False,
@@ -131,6 +120,17 @@ async def requestProxy(
             "message": "This proxy requires an Authentication Key to complete a Request."
         }
     
+    if config["cacheExpiry"] != 0:
+        cache = (request.method, subdomain, path, tuple(data.items()))
+
+        if cache in cacheDict:
+            cacheEntry = cacheDict[cache]
+
+            if cacheEntry["timestamp"] + config["cacheExpiry"] > time():
+                return cacheEntry["response"]
+            else:
+                del cacheDict[cache]
+
     proxy = choice(proxylist)
 
     try:
