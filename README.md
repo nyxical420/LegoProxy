@@ -6,7 +6,7 @@ A rotating Roblox Proxy for accessing Roblox APIs through HTTPService
 ## Deploy LegoProxy
 More Deploy buttons will be added when i find a free hosting service that can host proxies like this.
 
-https://replit.com/new/github/xacvwe/LegoProxy
+https://replit.com/new/github/PyTsun/LegoProxy
 
 ## LegoProxy Usage
 For example, we want to get Roblox's Roblox Information by his Roblox ID.
