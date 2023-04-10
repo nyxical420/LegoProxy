@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import FileResponse, RedirectResponse
 
 import json
+from base64 import b64encode
 from random import choice
 from httpx import AsyncClient
 from json.decoder import JSONDecodeError
@@ -103,19 +104,19 @@ async def requestProxy(
     if config["blacklistedSubdomains"].__contains__(subdomain):
         return {
             "success": False,
-            "message": "The Roblox API is Blacklisted to this LegoProxy Server."
+            "message": "This LegoProxy Server is Blocking this Roblox API."
         }
     
     if config["placeId"] != 0 and request.headers.get("Roblox-Id") != config["placeId"]:
         return {
             "success": False,
-            "message": "This proxy is only accepting requests from a Roblox Game."
+            "message": "This LegoProxy Server is only accepting requests through a Roblox Game."
         }
 
     if config["proxyAuthKey"] != "" and request.headers.get("LP-AuthKey")!= config["proxyAuthKey"]:
         return {
             "success": False,
-            "message": "This proxy requires an Authentication Key to complete a Request."
+            "message": "This LegoProxy Server requires an Authorization Key to complete an Proxy Request."
         }
 
     proxy = choice(proxylist)
