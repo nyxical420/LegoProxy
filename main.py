@@ -280,4 +280,4 @@ async def requestProxy(
 
 if __name__ == "__main__":
     print("LegoProxy Started!")
-    run("main:app", host="127.0.0.1", port=443, reload=True, log_level="warning")
+    run("main:app", host="0.0.0.0", port=443, reload=True, log_level="warning")
