@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Request, Form, Body
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 
-import time
 import json
 from uvicorn import run
 from random import choice
+from time import time, sleep
 from base64 import b64encode
 from httpx import AsyncClient
 from core.packages.logging import log
@@ -61,20 +61,20 @@ async def RateLimiter(request: Request, call_next):
             return JSONResponse(content={"success": False, "message": f"Your Roblox Game is permanently blacklisted from using this LegoProxy Server."}, status_code=401)
 
         if not placeId in users:
-            users[placeId] = {"count": 0, "time": time.time()}
+            users[placeId] = {"count": 0, "time": time()}
         else:
-            if time.time() - users[placeId]["time"] > reqTime:
+            if time() - users[placeId]["time"] > reqTime:
                 users.pop(placeId, None)
             else:
                 if users[placeId]["count"] >= reqLimit:
                     if placeId not in blacklisted:
-                        blacklisted[placeId] = time.time() + blockTime
+                        blacklisted[placeId] = time() + blockTime
                     users[placeId]["count"] = 0
 
             users[placeId]["count"] += 1
 
         if placeId in blacklisted:
-            remaining_time = int(blacklisted[placeId] - time.time())
+            remaining_time = int(blacklisted[placeId] - time())
 
             if remaining_time <= 0:
                 del blacklisted[placeId]
@@ -83,20 +83,20 @@ async def RateLimiter(request: Request, call_next):
                 return JSONResponse(content={"success": False, "message": f"You are temporarily blacklisted from using this LegoProxy Server for {convertTS(remaining_time)}."}, status_code=429)
 
     if not proxyIP in users:
-        users[proxyIP] = {"count": 0, "time": time.time()}
+        users[proxyIP] = {"count": 0, "time": time()}
     else:
-        if time.time() - users[proxyIP]["time"] > reqTime:
+        if time() - users[proxyIP]["time"] > reqTime:
             users.pop(proxyIP, None)
         else:
             if users[proxyIP]["count"] >= reqLimit:
                 if proxyIP not in blacklisted:
-                    blacklisted[proxyIP] = time.time() + blockTime
+                    blacklisted[proxyIP] = time() + blockTime
                 users[proxyIP]["count"] = 0
 
         users[proxyIP]["count"] += 1
 
     if proxyIP in blacklisted:
-        remaining_time = int(blacklisted[proxyIP] - time.time())
+        remaining_time = int(blacklisted[proxyIP] - time())
 
         if remaining_time <= 0:
             del blacklisted[proxyIP]
@@ -113,7 +113,7 @@ def cleanup_users():
             if time.time() - data["time"] > reqTime:
                 del users[proxyIP]
 
-        time.sleep(1)
+        sleep(1)
 
 from threading import Thread
 
@@ -279,4 +279,5 @@ async def requestProxy(
 
 
 if __name__ == "__main__":
+    print("LegoProxy Started!")
     run("main:app", host="127.0.0.1", port=443, reload=True, log_level="warning")
