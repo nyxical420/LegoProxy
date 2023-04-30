@@ -29,7 +29,7 @@ def getConfig():
         return config
 
 reqTime = 60
-reqLimit = 512
+reqLimit = 256
 blockTime = 43200
 
 users = {}
