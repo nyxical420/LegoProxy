@@ -2,5 +2,6 @@
     "password": "",
     "placeId": 0,
     "proxyAuthKey": "",
-    "blacklistedSubdomains": ["games"]
+    "blacklistedSubdomains": ["games"],
+    "proxyRotate": false
 }
