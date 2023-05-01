@@ -18,12 +18,21 @@ https://users.roblox.com/v1/users/1
 
 But with LegoProxy, You will have to place the Endpoint from the URL path before the API path you want to create a GET Request from:
 ```
-https://legoproxy.veriblox.ml/users/v1/users/1
+https://legoproxy.fundlebox.fun/users/v1/users/1
 ```
 
 Requesting to LegoProxy follows the following format:
 ```
-https://legoproxy.veriblox.ml/<subdomain>/<path>
+https://legoproxy.fundlebox.fun/<subdomain>/<path>
+```
+
+Here's a LUA Script to make a Request to a LegoProxy Server.
+```lua
+local HTTPService = game:GetService("HttpService")
+local LegoProxy = "https://legoproxy.fundlebox.fun/"
+
+local TestRequest = HTTPService:GetAsync(LegoProxy .. "users/v1/users/8")
+print(TestRequest)
 ```
 
 ## LegoProxy Features
