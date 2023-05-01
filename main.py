@@ -15,7 +15,7 @@ from httpx._exceptions import ConnectError, ConnectTimeout, RequestError
 app = FastAPI(
     title="LegoProxy",
     description="A rotating Roblox API Proxy for accessing Roblox APIs through HTTPService",
-    version="v2",
+    version="v2-bugfix",
     docs_url=None,
     redoc_url=None
 )
@@ -279,4 +279,4 @@ async def requestProxy(
 
 if __name__ == "__main__":
     print("LegoProxy Started!")
-    run("main:app", host="0.0.0.0", port=443, reload=True, log_level="warning")
+    run("main:app", host="127.0.0.1", port=443, reload=True, log_level="warning")
