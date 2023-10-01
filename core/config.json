@@ -1,0 +1,37 @@
+{
+    "config": {
+        "proxy": {
+            "placeId": 0,
+            "requestTime": 60,
+            "requestLimit": 2048,
+            "cacheMaxSize": 100,
+            "cacheTTL": 150
+        },
+        "blocking": {
+            "ips": [
+                "192.168.1.1"
+            ],
+            "ids": [
+                0
+            ],
+            "blockTime": 43200,
+            "subdomains": [
+                "games",
+                "catalog"
+            ]
+        },
+        "logging": {
+            "webhook": ""
+        }
+    },
+    "relay_config": {
+        "use_relay": true
+    },
+    "analytics": {
+        "requests": [
+            19273886,
+            506220,
+            177
+        ]
+    }
+}

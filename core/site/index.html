@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.55">
+    <title>LegoProxy</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #111;
+        }
+
+        .pulse-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .pulse {
+            width: 150px;
+            height: 150px;
+            background-color: rgba(var(--r), var(--g), var(--b), 1);
+            border-radius: 100%;
+            position: relative;
+            animation: pulse var(--speed) infinite;
+            transition: 500ms
+        }
+        
+        @font-face {
+            font-family: 'Comic Neue Angular';
+            src: url('https://cdn.glitch.global/2c158a50-1e93-455c-b595-19267bda693b/ComicNeueAngular.woff') format('woff');
+        }
+
+        text {
+            color: white;
+            font-family: "Comic Neue Angular"
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--r), var(--g), var(--b), 1);
+            }
+            100% {
+                box-shadow: 0 0 35px 60px rgba(var(--r), var(--g), var(--b), 0);
+            }
+        }
+
+        a {
+            display: inline-block;
+            font-family: 'Comic Neue Angular';
+            color: white;
+            background-color: transparent;
+            text-decoration: none;
+            font-size: 20px;
+        }
+
+        a:link {
+            font-family: 'Comic Neue Angular';
+            color: white;
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        a:visited {
+            font-family: 'Comic Neue Angular';
+            color: white;
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        a:hover {
+            font-family: 'Comic Neue Angular';
+            color: #999;
+            background-color: transparent;
+            text-decoration: none;
+        }
+
+        a:active {
+            font-family: 'Comic Neue Angular';
+            color: white;
+            background-color: transparent;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="pulse-container" style="gap: 20px;">
+        <div class="pulse" style="--r: 69; --g: 69; --b: 69; --speed: 2500ms; display: flex; justify-content: center; align-items: center;">
+            <img src="/favicon.ico" width="150" height="155">
+        </div>
+        <div style="z-index: 1;">
+            <text style="font-size: 50px;"><text style="color: #75b2eb;">Lego</text><text style="color: #87d997;">Proxy</text></text><text style="font-size: 14px;">v2.1</text><br>
+            <text style="font-size: 18px;">Processed over <text id="totalRequests">0</text> requests (<text id="totalFailedRequests">0</text> failed, <text id="totalCachedRequests">0</text> cached)</text><br>
+            <text style="font-size: 18px;">with <text id="relays">0</text> Relay Clients connected to the Relay Server (<text id="relayState">...</text>)</text><br>
+            <text style="font-size: 18px;">and has an Avg. Process Time of <text id="averageProcessTime">0</text>ms (Last: <text id="lastProcessTime">0</text>ms)</text><br>
+            <text style="font-size: 12px;">Github Project: <a style="font-size: 12px;" href="https://github.com/nyxical420/LegoProxy">https://github.com/nyxical420/LegoProxy</a></text><br>
+        </div>
+    </div>
+
+    <script>
+        function updateStats() {
+            fetch('/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const averageProcessTime = data.averageProcTime;
+
+                    let r, g, b;
+                    
+                    if (averageProcessTime == 0) {
+                        r = 69;
+                        g = 69;
+                        b = 255;
+                    } else if (averageProcessTime <= 30) { // probbably responses are all caches.
+                        r = 69;
+                        g = 69;
+                        b = 255;
+                    } else if (averageProcessTime <= 150) {
+                        r = 69;
+                        g = 255;
+                        b = 69;
+                    } else if (averageProcessTime <= 300) {
+                        r = 173;
+                        g = 255;
+                        b = 47;
+                    } else if (averageProcessTime <= 500) {
+                        r = 255;
+                        g = 165;
+                        b = 69;
+                    } else if (averageProcessTime <= 750) {
+                        r = 255;
+                        g = 69;
+                        b = 69;
+                    } else {
+                        r = 96;
+                        g = 6;
+                        b = 9;
+                    }
+
+                    document.querySelector('.pulse').style.setProperty('--r', r);
+                    document.querySelector('.pulse').style.setProperty('--g', g);
+                    document.querySelector('.pulse').style.setProperty('--b', b);
+
+                    document.getElementById('totalRequests').textContent = data.requests[0].toLocaleString();
+                    document.getElementById('totalFailedRequests').textContent = data.requests[1].toLocaleString();
+                    document.getElementById('totalCachedRequests').textContent = data.requests[2].toLocaleString();
+                    document.getElementById('averageProcessTime').textContent = averageProcessTime.toLocaleString();
+                    document.getElementById('lastProcessTime').textContent = data.lastProcTime.toLocaleString();
+                    document.getElementById('relays').textContent = data.relays.toLocaleString();
+
+                    if (data.relayEnabled == true) {
+                        document.getElementById("relayState").textContent = "enabled"
+                    } else {
+                        document.getElementById("relayState").textContent = "disabled"
+                    }
+                })
+                .catch(error => {
+                    r = 69;
+                    g = 69;
+                    b = 69;
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        window.setInterval(updateStats, 5000);
+        updateStats();
+    </script>
+</body>
+</html>
