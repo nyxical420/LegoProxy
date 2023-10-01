@@ -3,7 +3,7 @@
         "proxy": {
             "placeId": 0,
             "requestTime": 60,
-            "requestLimit": 2048,
+            "requestLimit": 128,
             "cacheMaxSize": 100,
             "cacheTTL": 150
         },
@@ -25,13 +25,13 @@
         }
     },
     "relay_config": {
-        "use_relay": true
+        "use_relay": false
     },
     "analytics": {
         "requests": [
-            19273886,
-            506220,
-            177
+            0,
+            0,
+            0
         ]
     }
 }
