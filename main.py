@@ -3,7 +3,6 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
 from uvicorn import run
 from random import choice
-from random import randint
 from json import load, dump
 from threading import Thread
 from time import time, sleep
@@ -65,6 +64,7 @@ blacklisted = {}
 
 relay = {
     "connections": {},
+    "addresses": [],
     "responses": {}
 }
 
@@ -72,8 +72,8 @@ responseTime = [0]
 sets = 30
 
 cache = TTLCache(
-    maxsize=config()["config"]["proxy"]["cacheMaxSize"],
-    ttl=config()["config"]["proxy"]["cacheTTL"]
+    maxsize=config()["config"]["caching"]["maxSize"],
+    ttl=config()["config"]["caching"]["ttl"]
 )
 
 @app.middleware("http")
@@ -108,69 +108,36 @@ async def rateLimiter(request: Request, callNext):
             status_code=401
         )
     
-    if id is not None:
-        if not id in users:
-            users[id] = {"count": 0, "time": time()}
-        else:
-            if time() - users[id]["time"] > proxyConfig["config"]["proxy"]["requestTime"]:
-                users.pop(id, None)
-            else:
-                if users[id]["count"] >= proxyConfig["config"]["proxy"]["requestLimit"]:
-                    if id not in blacklisted:
-                        blacklisted[id] = time() + proxyConfig["config"]["blocking"]["blockTime"]
-                    users[id]["count"] = 0
-
-                try:
-                    users[id]["count"] += 1
-                except KeyError:
-                    pass
-
-        if id in blacklisted:
-            remainingTime = int(blacklisted[id] - time())
-
-            if remainingTime <= 0:
-                del blacklisted[id]
-            else:
-                Logging.requestLog([request.method, ip, id, 3, request.url.path, request.query_params])
-                return JSONResponse(
-                    content={
-                        "success": False,
-                        "message": f"This Roblox Game is temporarily blocked by the LegoProxy Server for {convertTime(remainingTime)}."
-                    }, 
-                    status_code=429
-                )
-    
+    if not ip in users:
+        users[ip] = {"count": 0, "time": time()}
     else:
-        if not ip in users:
-            users[ip] = {"count": 0, "time": time()}
+        if time() - users[ip]["time"] > proxyConfig["config"]["proxy"]["requestTime"]:
+            users.pop(ip, None)
         else:
-            if time() - users[ip]["time"] > proxyConfig["config"]["proxy"]["requestTime"]:
-                users.pop(ip, None)
-            else:
-                if users[ip]["count"] >= proxyConfig["config"]["proxy"]["requestLimit"]:
-                    if ip not in blacklisted:
-                        blacklisted[ip] = time() + proxyConfig["config"]["blocking"]["blockTime"]
-                    users[ip]["count"] = 1
+            if users[ip]["count"] >= proxyConfig["config"]["proxy"]["requestLimit"]:
+                if ip not in blacklisted:
+                    blacklisted[ip] = time() + proxyConfig["config"]["blocking"]["blockTime"]
+                users[ip]["count"] = 1
 
-                try:
-                    users[ip]["count"] += 1
-                except KeyError:
-                    pass
+            try:
+                users[ip]["count"] += 1
+            except KeyError:
+                pass
 
-        if ip in blacklisted:
-            remainingTime = int(blacklisted[ip] - time())
+    if ip in blacklisted:
+        remainingTime = int(blacklisted[ip] - time())
 
-            if remainingTime <= 0:
-                del blacklisted[ip]
-            else:
-                Logging.requestLog([request.method, ip, id, 3, request.url.path, request.query_params])
-                return JSONResponse(
-                    content={
-                        "success": False, 
-                        "message": f"This IP is temporarily blacklisted from using this LegoProxy Server for {convertTime(remainingTime)}."
-                    }, 
-                    status_code=429
-                )
+        if remainingTime <= 0:
+            del blacklisted[ip]
+        else:
+            Logging.requestLog([request.method, ip, id, 3, request.url.path, request.query_params])
+            return JSONResponse(
+                content={
+                    "success": False, 
+                    "message": f"This IP is temporarily blacklisted from using this LegoProxy Server for {convertTime(remainingTime)}."
+                }, 
+                status_code=429
+            )
     
     response = await callNext(request)
     return response
@@ -188,23 +155,32 @@ async def favicon():
 
 @app.websocket("/relay")
 async def relayServer(websocket: WebSocket):
+    ws_ip = websocket.headers.get("X-Forwarded-For")
     await websocket.accept()
+
+
+
+    if not ws_ip in relay["addresses"]:
+        relay["addresses"].append(ws_ip)
+    else:
+        Logging.proxyLog(f"An existing Relay Client ({ws_ip}) attempted to connect a new Relay Client on the same IP Address. Disconnected.")
+        return await websocket.close()
 
     relayId = await websocket.receive_text()
     relay["connections"][relayId] = websocket
-    Logging.proxyLog(f"Relay Client ({relayId}) is connecting to the Relay Server...")
+    Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) is connecting to the Relay Server...")
 
 
     if env("RelayPassword") != "":
-        Logging.proxyLog(f"Waiting for Password response to Relay Client ({relayId})...")
+        Logging.proxyLog(f"Waiting for Password response to Relay Client ({relayId}, {ws_ip})...")
         await websocket.send_text("true")
         password = await websocket.receive_text()
 
         if password == env("RelayPassword"):
-            Logging.proxyLog(f"Relay Client ({relayId}) has returned the correct Relay Password!")
+            Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has returned the correct Relay Password!")
             await websocket.send_text("authenticated")
         else:
-            Logging.proxyLog(f"Relay Client ({relayId}) has returned the incorrect Relay Password. Disconnecting...")
+            Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has returned the incorrect Relay Password. Disconnecting...")
             await websocket.send_text("notauthenticated")
             return await websocket.close()
     else:
@@ -218,18 +194,18 @@ async def relayServer(websocket: WebSocket):
     else:
         await websocket.send_text("false")
 
-
     try:
         while True:
             data = await websocket.receive_json()
-            Logging.proxyLog(f"Receiving Data from Relay Client ({relayId})...")
+            Logging.proxyLog(f"Receiving Data from Relay Client ({relayId}, {ws_ip})...")
             relay["responses"][data["id"]] = {}
             relay["responses"][data["id"]] = data["response"]
-            Logging.proxyLog(f"Data Received from Relay Client ({relayId})!")
+            Logging.proxyLog(f"Data Received from Relay Client ({relayId}, {ws_ip})!")
 
     except WebSocketDisconnect:
         del relay["connections"][relayId]
-        Logging.proxyLog(f"Relay Client ({relayId}) has disconnected from the Relay Server.")
+        relay["addresses"].remove(ws_ip)
+        Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has disconnected from the Relay Server.")
         await websocket.close()
 
 # Added to differentiate responses from the host machine and relay clients.
@@ -278,17 +254,20 @@ async def serverStats():
     }
 
 
-#@app.get("/{subdomain}/{path:path}")
-#@app.post("/{subdomain}/{path:path}")
-@app.get("/{subdomain}.roblox.com/{path:path}")
-@app.post("/{subdomain}.roblox.com/{path:path}")
-async def requestProxy(request: Request, subdomain: str, path: str, data: dict = Body({})):
+@app.get("/{api}/{endpoint:path}")
+@app.post("/{api}/{endpoint:path}")
+
+@app.get("/{https_protocol}://{api}.roblox.com/{endpoint:path}")
+
+@app.get("/{api}.roblox.com/{endpoint:path}")
+@app.post("/{api}.roblox.com/{endpoint:path}")
+async def requestProxy(request: Request, api: str, endpoint: str, data: dict = Body({})):
     startTime = time()
     proxyConfig = config()
-    subdomain = subdomain.lower()
+    api = api.lower()
     ip, id = request.headers.get("X-Forwarded-For"), request.headers.get("Roblox-Id")
 
-    cacheKey = f"{ip}:{id}:{subdomain}.roblox.com/{path}?{request.query_params}"
+    cacheKey = f"{ip}:{id}:{api}.roblox.com/{endpoint}?{request.query_params}"
     cachedResponse = cache.get(cacheKey)
 
     proxyConfig["analytics"]["requests"][0] += 1
@@ -309,14 +288,14 @@ async def requestProxy(request: Request, subdomain: str, path: str, data: dict =
     
     password = request.headers.get("ProxyPassword")
 
-    if subdomain in proxyConfig["config"]["blocking"]["subdomains"]:
+    if api in proxyConfig["config"]["blocking"]["apis"]:
         Logging.requestLog([request.method, ip, id, 2, request.url.path, request.query_params])
         proxyConfig["analytics"]["requests"][1] += 1
         with open("./core/config.json", "w+") as file: dump(proxyConfig, file, indent=4)
         
         return {
             "success": False,
-            "message": f"The Roblox API {subdomain}.roblox.com is being blocked by this LegoProxy Server."
+            "message": f"The Roblox API {api}.roblox.com is being blocked by this LegoProxy Server."
         }
 
     if proxyConfig["config"]["proxy"]["placeId"] != 0 and id != proxyConfig["config"]["proxy"]["placeId"]:
@@ -344,8 +323,8 @@ async def requestProxy(request: Request, subdomain: str, path: str, data: dict =
         if proxyConfig["relay_config"]["use_relay"] == True and relay["connections"]:
             jsonData = {
                 "method": request.method,
-                "subdomain": subdomain,
-                "path": path,
+                "api": api,
+                "endpoint": endpoint,
                 "query": f"{request.query_params}",
                 "data": data
             }
@@ -359,9 +338,9 @@ async def requestProxy(request: Request, subdomain: str, path: str, data: dict =
         else:
             async with AsyncClient() as cli:
                 if request.query_params == None:
-                    req = cli.build_request(request.method, f"https://{subdomain}.roblox.com/{path}", json=data)
+                    req = cli.build_request(request.method, f"https://{api}.roblox.com/{endpoint}", json=data)
                 else:
-                    req = cli.build_request(request.method, f"https://{subdomain}.roblox.com/{path}?{request.query_params}", json=data)
+                    req = cli.build_request(request.method, f"https://{api}.roblox.com/{endpoint}?{request.query_params}", json=data)
 
                 res = await cli.send(req)
                 response = res.json()
@@ -370,7 +349,7 @@ async def requestProxy(request: Request, subdomain: str, path: str, data: dict =
         Logging.requestLog([request.method, ip, id, 2, request.url.path, request.query_params])
         response = {
             "success": False,
-            "message": f"The LegoProxy Server did not get a JSON Response from {subdomain}.roblox.com"
+            "message": f"The LegoProxy Server did not get a JSON Response from {api}.roblox.com"
         }
         proxyConfig["analytics"]["requests"][1] += 1
 
@@ -378,7 +357,7 @@ async def requestProxy(request: Request, subdomain: str, path: str, data: dict =
         Logging.requestLog([request.method, ip, id, 2, request.url.path, request.query_params])
         response = {
             "success": False,
-            "message": f"The LegoProxy Server could not connect to {subdomain}.roblox.com"
+            "message": f"The LegoProxy Server could not connect to {api}.roblox.com"
         }
         proxyConfig["analytics"]["requests"][1] += 1
 
@@ -386,7 +365,7 @@ async def requestProxy(request: Request, subdomain: str, path: str, data: dict =
         Logging.requestLog([request.method, ip, id, 2, request.url.path, request.query_params])
         response = {
             "success": False,
-            "message": f"The LegoProxy Server could not send a request to {subdomain}.roblox.com"
+            "message": f"The LegoProxy Server could not send a request to {api}.roblox.com"
         }
         proxyConfig["analytics"]["requests"][1] += 1
 
@@ -415,7 +394,7 @@ async def requestProxy(data: dict = Body({})):
     except RequestError:
         return {
             "success": False,
-            "message": "Failed to send a Request to the Discord API."
+            "message": "Failed to send a Request to the Webhook API."
         }
 
     except KeyError:
@@ -454,4 +433,4 @@ async def userCleanup():
 
 if __name__ == "__main__":
     Logging.proxyLog("LegoProxy Started!")
-    run("main:app", host="0.0.0.0", port=443, reload=True, log_level="warning")
+    run("main:app", host="0.0.0.0", port=443, reload=True, proxy_headers=True, log_level="warning")
