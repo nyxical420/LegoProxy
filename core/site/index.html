@@ -99,6 +99,29 @@
             <text style="font-size: 18px;">and has an Avg. Process Time of <text id="averageProcessTime">0</text>ms (Last: <text id="lastProcessTime">0</text>ms)</text><br>
             <text style="font-size: 12px;">Github Project: <a style="font-size: 12px;" href="https://github.com/nyxical420/LegoProxy">https://github.com/nyxical420/LegoProxy</a></text><br>
         </div>
+
+        <div style="position: fixed; bottom: 0; right: 15px;">
+            <style>
+                .spinning-image {
+                    perspective: 1000px;
+                    transform: translateX(50%);
+                    animation: spin 6s steps(64) infinite;
+                    user-select: none;
+                }
+        
+                .spinning-image img {
+                    width: 64;
+                    height: 64px;
+                }
+        
+                @keyframes spin {
+                    0% { transform: rotateY(0deg); }
+                    100% { transform: rotateY(360deg); }
+                }
+            </style>
+            
+            <img class="spinning-image" src="nyx.png" height="50" width="auto" alt="Made by nyxical420!">
+        </div>
     </div>
 
     <script>

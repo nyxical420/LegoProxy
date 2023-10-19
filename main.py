@@ -21,7 +21,7 @@ load_dotenv(".env")
 
 app = FastAPI(
     title="LegoProxy",
-    description="A Roblox API And Webhook Proxy for Roblox HTTPService",
+    description="A multipurpose Roblox Proxy for proxying Roblox API and Webhook Requests.",
     version="v2.1",
     docs_url=None,
     redoc_url=None
@@ -123,6 +123,8 @@ async def rateLimiter(request: Request, callNext):
                 users[ip]["count"] += 1
             except KeyError:
                 pass
+    
+    
 
     if ip in blacklisted:
         remainingTime = int(blacklisted[ip] - time())
@@ -134,7 +136,7 @@ async def rateLimiter(request: Request, callNext):
             return JSONResponse(
                 content={
                     "success": False, 
-                    "message": f"This IP is temporarily blacklisted from using this LegoProxy Server for {convertTime(remainingTime)}."
+                    "message": f"This IP Address is temporarily blacklisted from using this LegoProxy Server for {convertTime(remainingTime)}."
                 }, 
                 status_code=429
             )
@@ -144,21 +146,21 @@ async def rateLimiter(request: Request, callNext):
 
 @app.get("/")
 async def proxyHome(json: bool = False):
-    if not json:
-        return FileResponse("./core/site/index.html")
-    else:
-        return {"success": True, "message": "LegoProxy Online!"}
+    if not json: return FileResponse("./core/site/index.html")
+    else: return {"success": True, "message": "LegoProxy Online!"}
     
 @app.get("/favicon.ico")
 async def favicon():
     return FileResponse("./core/site/favicon.png")
 
+@app.get("/nyx.png")
+async def favicon():
+    return FileResponse("./core/site/nyx-icon.png")
+
 @app.websocket("/relay")
 async def relayServer(websocket: WebSocket):
     ws_ip = websocket.headers.get("X-Forwarded-For")
     await websocket.accept()
-
-
 
     if not ws_ip in relay["addresses"]:
         relay["addresses"].append(ws_ip)
@@ -400,7 +402,7 @@ async def requestProxy(data: dict = Body({})):
     except KeyError:
         return {
             "success": False,
-            "message": "Data is missing from the POST Body. Do you have webhook and data inside?"
+            "message": "Data is missing from the POST Body. Do you have a Webhook URL and JSON Data from the body?"
         }
 
     return {"success": True, "message": "Webhook Data has been sent Successfully!"}
