@@ -1,6 +1,11 @@
 # LegoProxy
 A multipurpose Roblox Proxy for proxying Roblox API and Webhook Requests.
 
+# Support
+Support my work by donating to my Ko-Fi Account! Any amount is appreciated.
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M3M84Y6)
+
 # Features
 - list of features, doing it tomorrow.
 
