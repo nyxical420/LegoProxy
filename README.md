@@ -16,14 +16,14 @@ Here's a quick breakdown on how to use LegoProxy.
 METHODS: `GET`, `POST`
 
 ```
-https://legoproxy.fundlebox.fun/users.roblox.com/v1/users/1
+https://legoproxy.nyxical.cloud/users.roblox.com/v1/users/1
 ```
 
 ### Proxying Webhook Requests
 METHODS: `POST`
 
 ```
-https://legoproxy.fundlebox.fun/webhook
+https://legoproxy.nyxical.cloud/webhook
 ```
 
 JSON DATA:
