@@ -274,16 +274,16 @@ async def requestProxy(request: Request, api: str, endpoint: str, data: dict = B
 
     proxyConfig["analytics"]["requests"][0] += 1
 
-    if cachedResponse and config()["config"]["proxy"]["cacheTTL"] != 0:
+    if cachedResponse and config()["config"]["caching"]["ttl"] != 0:
         endTime = time()
         responseTime.append(endTime - startTime)
         proxyConfig["analytics"]["requests"][2] += 1
 
-        with open("./core/config.json", "w+") as file:
-            dump(proxyConfig, file, indent=4)
+        #with open("./core/config.json", "w+") as file:
+        #    dump(proxyConfig, file, indent=4)
 
-        if not cachedResponse.get("success"):
-            proxyConfig["analytics"]["requests"][1] += 1
+        #if not cachedResponse.get("success"):
+        #    proxyConfig["analytics"]["requests"][1] += 1
 
         Logging.requestLog([request.method, ip, id, 1, request.url.path, request.query_params])
         return cachedResponse
@@ -378,7 +378,7 @@ async def requestProxy(request: Request, api: str, endpoint: str, data: dict = B
 
     if len(responseTime) > sets: responseTime.pop(0)
     
-    if config()["config"]["proxy"]["cacheTTL"] != 0: cache[cacheKey] = response
+    if config()["config"]["caching"]["ttl"] != 0: cache[cacheKey] = response
     Logging.requestLog([request.method, ip, id, 1, request.url.path, request.query_params])
     return response
 
@@ -435,4 +435,5 @@ async def userCleanup():
 
 if __name__ == "__main__":
     Logging.proxyLog("LegoProxy Started!")
-    run("main:app", host="0.0.0.0", port=443, reload=True, proxy_headers=True, log_level="warning")
+    Logging.proxyLog("LegoProxy running on http://localhost:8080")
+    run("main:app", host="0.0.0.0", port=8080, reload=True, proxy_headers=True, log_level="warning")
