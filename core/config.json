@@ -17,8 +17,6 @@
                 0
             ],
             "apis": [
-                "games",
-                "catalog"
             ],
             "blockTime": 43200
         },
