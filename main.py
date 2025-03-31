@@ -173,12 +173,12 @@ async def relayServer(websocket: WebSocket):
     Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) is connecting to the Relay Server...")
 
 
-    if env("RelayPassword") != "":
+    if env("relaypassword") != "":
         Logging.proxyLog(f"Waiting for Password response to Relay Client ({relayId}, {ws_ip})...")
         await websocket.send_text("true")
         password = await websocket.receive_text()
 
-        if password == env("RelayPassword"):
+        if password == env("relaypassword"):
             Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has returned the correct Relay Password!")
             await websocket.send_text("authenticated")
         else:
@@ -208,7 +208,7 @@ async def relayServer(websocket: WebSocket):
         del relay["connections"][relayId]
         relay["addresses"].remove(ws_ip)
         Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has disconnected from the Relay Server.")
-        await websocket.close()
+        # await websocket.close() # Commented out because the websocket is already closed after the exception occurs
 
 # Added to differentiate responses from the host machine and relay clients.
 @app.get("/relay/response/{id}")
@@ -311,7 +311,7 @@ async def requestProxy(request: Request, api: str, endpoint: str, data: dict = B
             "message": f"This LegoProxy Server is only accepting requests from the following Game ID: {gameId}"
         }
 
-    if env("ProxyPassword") != "" and password != env("ProxyPassword"):
+    if env("proxypassword") != "" and password != env("proxypassword"):
         Logging.requestLog([request.method, ip, id, 2, request.url.path, request.query_params])
         proxyConfig["analytics"]["requests"][1] += 1
         with open("./core/config.json", "w+") as file: dump(proxyConfig, file, indent=4)
