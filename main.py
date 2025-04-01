@@ -231,9 +231,15 @@ async def relayRequest(type: str, id: str, data: dict = {}):
         return "There are no Relay Clients connected to this LegoProxy Server."
 
     # relayClient = choice(list(relay["connections"].keys()))
-    relayClient = choice(list(
-        await getFreeRelayClients()
-    ))
+    clients = await getFreeRelayClients()
+    
+    if len(clients) == 0:
+        while not len(clients) > 0: 
+            await asyncsleep(.000000001)
+            
+        clients = await getFreeRelayClients() # get updated client list
+    
+    relayClient = choice(list(clients))
     
     relay["connection_data"][relayClient]["free"] = False
     
@@ -269,7 +275,8 @@ async def serverStats():
         "averageProcTime": round(average * 1000),
         "lastProcTime": round(responseTime[len(responseTime)-1] * 1000),
         "relays": len(relay["connections"]),
-        "relayEnabled": config()["relay_config"]["use_relay"]
+        "relayEnabled": config()["relay_config"]["use_relay"],
+        "relaysFree": len(await getFreeRelayClients())
     }
 
 
