@@ -6,3 +6,4 @@ shortuuid
 uvicorn
 python-dotenv
 python-multipart
+websockets

@@ -1,5 +1,9 @@
 {
     "config": {
+        "app": {
+            "host": "0.0.0.0",
+            "port": 8080
+        },
         "proxy": {
             "placeId": 0,
             "requestTime": 60,
@@ -16,8 +20,7 @@
             "ids": [
                 0
             ],
-            "apis": [
-            ],
+            "apis": [],
             "blockTime": 43200
         },
         "logging": {
@@ -25,12 +28,12 @@
         }
     },
     "relay_config": {
-        "use_relay": false
+        "use_relay": true
     },
     "analytics": {
         "requests": [
-            1,
-            0,
+            24,
+            5,
             0
         ]
     }

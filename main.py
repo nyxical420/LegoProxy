@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(".env")
+
 from fastapi import FastAPI, Request, Body, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
@@ -6,9 +9,8 @@ from random import choice
 from json import load, dump
 from threading import Thread
 from time import time, sleep
-from os import getenv as env
+from os import getenv as env, environ
 from datetime import datetime
-from dotenv import load_dotenv
 from colorama import Fore, init
 from shortuuid import ShortUUID
 from cachetools import TTLCache
@@ -17,7 +19,6 @@ from asyncio import sleep as asyncsleep
 
 from json.decoder import JSONDecodeError
 from httpx._exceptions import ConnectError, RequestError
-load_dotenv(".env")
 
 app = FastAPI(
     title="LegoProxy",
@@ -64,6 +65,7 @@ blacklisted = {}
 
 relay = {
     "connections": {},
+    "connection_data": {},
     "addresses": [],
     "responses": {}
 }
@@ -170,20 +172,23 @@ async def relayServer(websocket: WebSocket):
 
     relayId = await websocket.receive_text()
     relay["connections"][relayId] = websocket
+    relay["connection_data"][relayId] = {"free": True}
     Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) is connecting to the Relay Server...")
 
-
-    if env("RelayPassword") != "":
+    if env("relaypassword") != "":
         Logging.proxyLog(f"Waiting for Password response to Relay Client ({relayId}, {ws_ip})...")
         await websocket.send_text("true")
         password = await websocket.receive_text()
 
-        if password == env("RelayPassword"):
+        if password == env("relaypassword"):
             Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has returned the correct Relay Password!")
             await websocket.send_text("authenticated")
         else:
             Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has returned the incorrect Relay Password. Disconnecting...")
             await websocket.send_text("notauthenticated")
+            del relay["connections"][relayId]
+            del relay["connection_data"][relayId]
+            relay["addresses"].remove(ws_ip)
             return await websocket.close()
     else:
         await websocket.send_text("false")
@@ -200,15 +205,16 @@ async def relayServer(websocket: WebSocket):
         while True:
             data = await websocket.receive_json()
             Logging.proxyLog(f"Receiving Data from Relay Client ({relayId}, {ws_ip})...")
-            relay["responses"][data["id"]] = {}
+            # relay["responses"][data["id"]] = {}
             relay["responses"][data["id"]] = data["response"]
             Logging.proxyLog(f"Data Received from Relay Client ({relayId}, {ws_ip})!")
 
     except WebSocketDisconnect:
         del relay["connections"][relayId]
+        del relay["connection_data"][relayId]
         relay["addresses"].remove(ws_ip)
         Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has disconnected from the Relay Server.")
-        await websocket.close()
+        # await websocket.close() # Caused an error, commented out due to the connection is already closed
 
 # Added to differentiate responses from the host machine and relay clients.
 @app.get("/relay/response/{id}")
@@ -224,12 +230,20 @@ async def relayRequest(type: str, id: str, data: dict = {}):
     if not relay["connections"]:
         return "There are no Relay Clients connected to this LegoProxy Server."
 
-    relayClient = choice(list(relay["connections"].keys()))
+    # relayClient = choice(list(relay["connections"].keys()))
+    relayClient = choice(list(
+        await getFreeRelayClients()
+    ))
+    
+    relay["connection_data"][relayClient]["free"] = False
+    
     await relay["connections"][relayClient].send_text(f"{type} {id}")
     await relay["connections"][relayClient].send_json(data)
 
     while id not in relay.get("responses", {}): 
         await asyncsleep(.000000001) # quick sleep
+    
+    relay["connection_data"][relayClient]["free"] = True
     
     # used to return the response directly back to host.
     # commented out since i wanna make relay responses different than host responses.
@@ -238,6 +252,9 @@ async def relayRequest(type: str, id: str, data: dict = {}):
     #return response
     
     return id
+
+async def getFreeRelayClients() -> list:
+    return [client for client in relay["connection_data"] if relay["connection_data"][client].get('free',True)]
 
 @app.get("/stats")
 async def serverStats():
@@ -311,7 +328,7 @@ async def requestProxy(request: Request, api: str, endpoint: str, data: dict = B
             "message": f"This LegoProxy Server is only accepting requests from the following Game ID: {gameId}"
         }
 
-    if env("ProxyPassword") != "" and password != env("ProxyPassword"):
+    if env("proxypassword") != "" and password != env("proxypassword"):
         Logging.requestLog([request.method, ip, id, 2, request.url.path, request.query_params])
         proxyConfig["analytics"]["requests"][1] += 1
         with open("./core/config.json", "w+") as file: dump(proxyConfig, file, indent=4)
@@ -323,14 +340,17 @@ async def requestProxy(request: Request, api: str, endpoint: str, data: dict = B
     
     try:
         if proxyConfig["relay_config"]["use_relay"] == True and relay["connections"]:
+            req_id = ShortUUID().random(12)
             jsonData = {
                 "method": request.method,
                 "api": api,
                 "endpoint": endpoint,
                 "query": f"{request.query_params}",
-                "data": data
+                "data": data,
+                "_id": req_id
             }
-            response = await relayRequest("HTTP", ShortUUID().random(12), jsonData)
+            
+            response = await relayRequest("HTTP", req_id, jsonData)
 
             endTime = time()
             responseTime.append(endTime - startTime)
@@ -434,6 +454,15 @@ async def userCleanup():
     t.start()
 
 if __name__ == "__main__":
-    Logging.proxyLog("LegoProxy Started!")
-    Logging.proxyLog("LegoProxy running on http://localhost:8080")
-    run("main:app", host="0.0.0.0", port=8080, reload=True, proxy_headers=True, log_level="warning")
+    host = (config().get('config', {}).get('app', {}).get('host') or "0.0.0.0")
+    port = (config().get('config', {}).get('app', {}).get('port') or 8080)
+    Logging.proxyLog("LegoProxy started!")
+    Logging.proxyLog(f"LegoProxy running on http://{host}:{port}")
+    run(
+        "main:app", 
+        host=host,
+        port=port,
+        reload=True,
+        proxy_headers=True,
+        log_level="warning"
+    )
