@@ -214,7 +214,7 @@ async def relayServer(websocket: WebSocket):
         del relay["connection_data"][relayId]
         relay["addresses"].remove(ws_ip)
         Logging.proxyLog(f"Relay Client ({relayId}, {ws_ip}) has disconnected from the Relay Server.")
-        # await websocket.close() # Caused an error, commented out due to the connection is already closed
+        # await websocket.close() # Commented out because the websocket is already closed after the exception occurs
 
 # Added to differentiate responses from the host machine and relay clients.
 @app.get("/relay/response/{id}")
