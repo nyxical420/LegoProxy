@@ -28,12 +28,12 @@
         }
     },
     "relay_config": {
-        "use_relay": true
+        "use_relay": false
     },
     "analytics": {
         "requests": [
-            24,
-            5,
+            0,
+            0,
             0
         ]
     }
